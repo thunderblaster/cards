@@ -7,5 +7,6 @@ Run steps:
 Alternatively:
 1. Create app/config.js with database creds
 2. Install node/npm (if needed)
-3. In the app dir, `npm install`
-4. `node server.js`
+3. `cd app`
+4. `npm install`
+5. `node server.js`
