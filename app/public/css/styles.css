@@ -4,7 +4,7 @@ ul {
 
 #mycards {
     position: fixed;
-    bottom: -5vh;
+    bottom: 0;
     left: 0;
     right: 0;
 }
@@ -18,13 +18,13 @@ ul {
 .card {
     min-height: 40vh;
     max-height: 45vh;
-    min-width: 15vw;
+    min-width: 10vw; 
     max-width: 20vw;
     border-radius: 10px;
     padding: 1em;
     margin-left: 0.25em;
     margin-right: 0.25em;
-    margin-bottom: -1em;
+    
     cursor: pointer;
     float: left;
     font-size: 120%;
@@ -81,6 +81,8 @@ ul {
 @media (max-width: 900px) and (orientation: landscape) {
     .card {
         font-size: 100%;
+        margin-bottom: -1em;
+        min-width: 15vw;
     }
     .blackcard {
         left: 30%;
