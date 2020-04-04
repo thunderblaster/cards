@@ -22,6 +22,14 @@ app.get('/', function (req, res) {
     res.sendFile(__dirname + '/public/index.html');
 });
 
+app.get('/version', function (req, res) {
+    let version = {
+        hash: process.argv[2],
+        date: process.argv[3]
+    }
+    res.send(version);
+})
+
 app.use(express.static(__dirname + '/public'));
 
 var rooms = {};

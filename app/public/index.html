@@ -23,6 +23,7 @@
                 <li>If the game isn't responding, try refreshing the page and starting again.</li>
                 <li>Feel free to send me bug reports, feature requests, or custom cards!</li>
             </ul>
+            <div class="version"><p>Current Commit: {{version.hash}}<br>Commit Date: {{version.date}}</p></div>
         </div>
         <div v-if="roomjoined"> <!-- this is the playing cards view -->
             <div id="playerlist"><ul><li><u>{{room}}:</u></li><li v-for="player in players" :key="player.name" :class="{ selected: player.selected, turn: player.turn}">{{player.name}} - {{player.points}}</li></ul></div>

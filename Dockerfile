@@ -15,4 +15,10 @@ COPY . .
 
 EXPOSE 3001
 
-CMD [ "node", "app/server.js" ]
+ARG git_hash
+ENV env_hash=$git_hash
+
+ARG git_date
+ENV env_date=$git_date
+
+CMD [ "sh", "-c", "node app/server.js ${env_hash} ${env_date}" ]

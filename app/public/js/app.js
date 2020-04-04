@@ -9,7 +9,8 @@ var app = new Vue({
         roomjoined: false,
         gamestarted: false,
         selectedcards: [],
-        turn: false
+        turn: false,
+        version: {}
     },
     methods: {
         selectCard: function(index) {
@@ -86,6 +87,16 @@ var app = new Vue({
             window.setTimeout(()=>{socket.emit('drawfivecards');}, 1000);
             this.roomjoined = true;
         },
+    },
+    mounted() {
+        const Http = new XMLHttpRequest();
+        const url='/version';
+        Http.open("GET", url);
+        Http.send();
+
+        Http.onreadystatechange = (e) => {
+            app.version = JSON.parse(Http.responseText);
+        }
     }
 });
 
