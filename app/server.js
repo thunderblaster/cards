@@ -41,31 +41,34 @@ io.on('connection', function (socket) { //need to keep track server side of when
             pool.query('INSERT INTO log (name, room, ip_addr) VALUES (?, ?, ?)', [msg.name, msg.room, ip], function (error, results, fields) {
                 //cool deal
             });
-            if(!rooms[msg.room]) {
+            if(!rooms[msg.room]) { // new room, create it
                 createRoom(msg.room);
                 socket.name = msg.name;
                 socket.room = msg.room;
                 rooms[msg.room].userlist.push({id: socket.id, name: msg.name, selected: false, turn: false, points: 0});
-            } else if (rooms[msg.room].dclist.length>0) {
-                for(let i=rooms[msg.room].dclist.length-1; i>=0; i--) {
-                    if(msg.name===rooms[msg.room].dclist[i].name) {
-                        socket.name = msg.name;
-                        socket.room = msg.room;
-                        rooms[msg.room].userlist.push({id: socket.id, name: msg.name, selected: false, turn: false, points: rooms[msg.room].dclist[i].points});
-                        break;
+            } else { // existing room
+                if (rooms[msg.room].dclist.length>0) { // users have disconnected, check if this user is a returning one
+                    for(let i=rooms[msg.room].dclist.length-1; i>=0; i--) {
+                        if(msg.name===rooms[msg.room].dclist[i].name) { // match as disconnected user, give them their old score back
+                            socket.name = msg.name;
+                            socket.room = msg.room;
+                            rooms[msg.room].userlist.push({id: socket.id, name: msg.name, selected: false, turn: false, points: rooms[msg.room].dclist[i].points});
+                            break;
+                        }
                     }
                 }
-            } else {
-                socket.name = msg.name;
-                socket.room = msg.room;
-                rooms[msg.room].userlist.push({id: socket.id, name: msg.name, selected: false, turn: false, points: 0});
+                if(!socket.name) { // user was not matched to a disconnected one, treat as new user
+                    socket.name = msg.name;
+                    socket.room = msg.room;
+                    rooms[msg.room].userlist.push({id: socket.id, name: msg.name, selected: false, turn: false, points: 0});
+                }
             }
             
-            socket.join(msg.room);
-            io.to(msg.room).emit('userlist', rooms[msg.room].userlist);
-            if(rooms[msg.room].gamestarted) {
-                io.to(socket.id).emit('gamestarted');
-                io.to(socket.id).emit('dealblack', rooms[socket.room].currentBlack);
+            socket.join(msg.room); // add to the actual room
+            io.to(msg.room).emit('userlist', rooms[msg.room].userlist); // send updated userlist with our new guest
+            if(rooms[msg.room].gamestarted) { // if the game is in progress...
+                io.to(socket.id).emit('gamestarted'); // ...let the new user know
+                io.to(socket.id).emit('dealblack', rooms[socket.room].currentBlack); // ...and show them the current black card
             }
         }
         
