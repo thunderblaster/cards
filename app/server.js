@@ -111,6 +111,8 @@ io.on('connection', function (socket) { //need to keep track server side of when
                 shuffle(selectedcards);
                 io.to(socket.room).emit('selectedcards', selectedcards);
             }
+        } else {
+            io.to(socket.id).emit('whoareyou');
         }
         
         
@@ -165,6 +167,8 @@ io.on('connection', function (socket) { //need to keep track server side of when
                 }
             }
             io.to(socket.room).emit('userlist', rooms[socket.room].userlist);
+        } else {
+            io.to(socket.id).emit('whoareyou');
         }
         
     });

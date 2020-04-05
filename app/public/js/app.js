@@ -83,6 +83,10 @@ var app = new Vue({
                 app.selectedcards[cardIndex].selected = true;
                 window.setTimeout(clearBetweenRounds, 4500);
             });
+            socket.on('whoareyou', function() {
+                alert('Error occured. The page will be refreshed.');
+                location.reload(true);
+            })
             socket.emit('joinroom', {room: this.room, name: this.name});
             window.setTimeout(()=>{socket.emit('drawfivecards');}, 1000);
             this.roomjoined = true;
