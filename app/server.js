@@ -39,6 +39,10 @@ app.use(express.static(__dirname + '/public'));
 
 var rooms = {};
 
+app.get('/rooms', function (req, res) {
+    res.send(rooms);
+})
+
 io.on('connection', function (socket) { //need to keep track server side of when users have selected a white card
     socket.on('joinroom', function (msg) {
         if(msg.room) {
@@ -206,7 +210,7 @@ io.on('connection', function (socket) { //need to keep track server side of when
             //end redundant code
             
             if(rooms[socket.room].userlist.length==0) {
-                rooms[socket.room] = null;
+                delete rooms[socket.room];
             }
         }
     });
@@ -217,7 +221,7 @@ pool.query('SELECT CURRENT_TIMESTAMP', function (error, results, fields) { //tes
 });
 
 http.listen(3001, function () {
-    let now = new Date()
+    let now = new Date().toISOString();
     console.log('Application starting at ' + now + ' running on commit hash ' + process.argv[2]);
 });
 

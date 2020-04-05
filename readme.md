@@ -10,3 +10,5 @@ Alternatively:
 3. `cd app`
 4. `npm install`
 5. `node server.js`
+
+Logs are persisted in Docker Volumes.  Node will serve these logs at /log.  Node will also serve a list of all active rooms at /rooms.  If this list is empty, the server is not currently in use and it is safe to take it offline.
