@@ -3,7 +3,8 @@ var app = express();
 var http = require('http').createServer(app);
 var io = require('socket.io')(http);
 var mysql = require('mysql');
-const config = require('./config')
+const config = require('./config');
+
 
     var pool = mysql.createPool({
 	connectionLimit: 25,
@@ -28,7 +29,11 @@ app.get('/version', function (req, res) {
         date: process.argv[3]
     }
     res.send(version);
-})
+});
+
+app.get('/log', function (req, res) {
+    res.sendFile('/log/app.log');
+});
 
 app.use(express.static(__dirname + '/public'));
 
@@ -209,7 +214,8 @@ pool.query('SELECT CURRENT_TIMESTAMP', function (error, results, fields) { //tes
 });
 
 http.listen(3001, function () {
-    console.log('listening on *:3001');
+    let now = new Date()
+    console.log('Application starting at ' + now + ' running on commit hash ' + process.argv[2]);
 });
 
 function createRoom (roomname) {

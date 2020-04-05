@@ -1,5 +1,7 @@
 FROM node:10
 
+VOLUME /log
+
 # Create app directory
 WORKDIR /usr/src/cards
 
@@ -21,4 +23,4 @@ ENV env_hash=$git_hash
 ARG git_date
 ENV env_date=$git_date
 
-CMD [ "sh", "-c", "node app/server.js ${env_hash} ${env_date}" ]
+CMD [ "sh", "-c", "node app/server.js ${env_hash} ${env_date} 2>&1 | tee -a /log/app.log" ]
