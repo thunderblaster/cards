@@ -1,0 +1,24 @@
+version: '2'
+services:
+  cards-node:
+    build:
+      context: '.'
+      dockerfile: 'Dockerfile-compose'
+    hostname: 'cards-node'
+    container_name: 'cards-node'
+    working_dir: '/usr/src/cards'
+    tty: true
+    ports:
+      - '3001:3001'
+    volumes:
+      - './app:/usr/src/cards'
+      - 'cards-node-data:/log'
+    networks:
+      - app
+
+volumes:
+  cards-node-data:
+
+networks:
+  app:
+    driver: bridge

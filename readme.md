@@ -1,10 +1,17 @@
-Run steps:
+Docker run steps:
 1. Create app/config.js with database creds
 2. Install docker (if needed)
 3. `sudo ./build.sh`
-4. `sudo docker run -d -p 3001:3001 cards`
+4. Run with ----network="host" `sudo ./run-network-host.sh` or run with configured ports `sudo ./run.sh`
 
-Alternatively:
+Docker-compose steps:
+1. Create app/config.js with database creds
+2. Install docker (if needed)
+2. To build service: `docker-compose up --build`
+3. To stop service: CTL+C or `docker-compose stop`
+4. To teardown service `docker-compose down`
+
+Native Node.js steps:
 1. Create app/config.js with database creds
 2. Install node/npm (if needed)
 3. `cd app`
