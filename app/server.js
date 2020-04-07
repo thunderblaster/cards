@@ -46,6 +46,7 @@ app.get('/rooms', function (req, res) {
 io.on('connection', function (socket) { //need to keep track server side of when users have selected a white card
     socket.on('joinroom', function (msg) {
         if(msg.room) {
+            msg.room = msg.room.trim(); // fixes an issue where phones autocompleting the name will add a trailing space
             let ip = socket.request.headers["x-forwarded-for"] || socket.conn.remoteAddress.split(":")[3];
             pool.query('INSERT INTO log (name, room, ip_addr) VALUES (?, ?, ?)', [msg.name, msg.room, ip], function (error, results, fields) {
                 //cool deal
@@ -55,6 +56,7 @@ io.on('connection', function (socket) { //need to keep track server side of when
                 socket.name = msg.name;
                 socket.room = msg.room;
                 rooms[msg.room].userlist.push({id: socket.id, name: msg.name, selected: false, turn: false, points: 0});
+                rooms[msg.room].whitecards.push({card_id: randomInt(10000, 99999), card_text: msg.name}); // add this user's name as a white card, for funsies
             } else { // existing room
                 if (rooms[msg.room].dclist.length>0) { // users have disconnected, check if this user is a returning one
                     for(let i=rooms[msg.room].dclist.length-1; i>=0; i--) {
@@ -70,6 +72,7 @@ io.on('connection', function (socket) { //need to keep track server side of when
                     socket.name = msg.name;
                     socket.room = msg.room;
                     rooms[msg.room].userlist.push({id: socket.id, name: msg.name, selected: false, turn: false, points: 0});
+                    rooms[msg.room].whitecards.push({card_id: randomInt(10000, 99999), card_text: msg.name}); // add this user's name as a white card, for funsies
                 }
             }
             
@@ -88,6 +91,7 @@ io.on('connection', function (socket) { //need to keep track server side of when
         rooms[socket.room].userlist[0].turn = true;
         io.to(rooms[socket.room].userlist[0].id).emit('yourturn');
         io.to(socket.room).emit('userlist', rooms[socket.room].userlist);
+
     });
     socket.on('selected', function (msg) {
         if(socket.room) {
@@ -244,6 +248,10 @@ function createRoom (roomname) {
 function getRandomIndex (array) {
     return Math.floor(Math.random() * array.length);
 }
+
+function randomInt(low, high) {
+    return Math.floor(Math.random() * (high - low) + low)
+  }
 
 function shuffle(array) {
     var currentIndex = array.length, temporaryValue, randomIndex;
