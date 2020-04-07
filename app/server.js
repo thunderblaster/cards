@@ -55,6 +55,8 @@ io.on('connection', function (socket) { //need to keep track server side of when
                 socket.name = msg.name;
                 socket.room = msg.room;
                 rooms[msg.room].userlist.push({id: socket.id, name: msg.name, selected: false, turn: false, points: 0});
+                //Add list of users to the whitecards for giggles
+                //rooms[msg.room].whitecards.push(msg.name);
             } else { // existing room
                 if (rooms[msg.room].dclist.length>0) { // users have disconnected, check if this user is a returning one
                     for(let i=rooms[msg.room].dclist.length-1; i>=0; i--) {
@@ -70,6 +72,7 @@ io.on('connection', function (socket) { //need to keep track server side of when
                     socket.name = msg.name;
                     socket.room = msg.room;
                     rooms[msg.room].userlist.push({id: socket.id, name: msg.name, selected: false, turn: false, points: 0});
+                    rooms[msg.room].whitecards.push({card_id: randomInt(10000, 99999), card_text: msg.name});
                 }
             }
             
@@ -88,6 +91,23 @@ io.on('connection', function (socket) { //need to keep track server side of when
         rooms[socket.room].userlist[0].turn = true;
         io.to(rooms[socket.room].userlist[0].id).emit('yourturn');
         io.to(socket.room).emit('userlist', rooms[socket.room].userlist);
+
+
+        console.log(rooms[socket.room].whitecards.length);
+
+        for(let i=1; i < rooms[socket.room].whitecards.length; i++){
+            if(rooms[socket.room].whitecards[i].card_text == 'Nick'){
+                console.log('Nicks Card Found');
+                break;
+            }
+           
+        }
+        console.log(rooms[socket.room].whitecards);
+
+
+        console.log('Cards searched');
+
+
     });
     socket.on('selected', function (msg) {
         if(socket.room) {
@@ -233,7 +253,7 @@ function createRoom (roomname) {
     rooms[roomname] = {};
     rooms[roomname].userlist = [];
     rooms[roomname].dclist = [];
-    pool.query('SELECT * FROM white_cards', function (error, results, fields) {
+    pool.query('SELECT * FROM white_cards LIMIT 12', function (error, results, fields) {
         rooms[roomname].whitecards = results;
     });
     pool.query('SELECT * FROM black_cards', function (error, results, fields) {
@@ -244,6 +264,10 @@ function createRoom (roomname) {
 function getRandomIndex (array) {
     return Math.floor(Math.random() * array.length);
 }
+
+function randomInt(low, high) {
+    return Math.floor(Math.random() * (high - low) + low)
+  }
 
 function shuffle(array) {
     var currentIndex = array.length, temporaryValue, randomIndex;
