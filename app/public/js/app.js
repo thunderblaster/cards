@@ -10,9 +10,22 @@ var app = new Vue({
         gamestarted: false,
         selectedcards: [],
         turn: false,
-        version: {}
+        version: {},
+        chatlink: "",
+        tempchatlink: "",
+        prevchatlink: ""
     },
     methods: {
+        submitchatlink() {
+            this.chatlink = this.tempchatlink;
+        },
+        cancelchatlink() {
+            this.chatlink = this.prevchatlink;
+        },
+        editchatlink() {
+            this.prevchatlink = this.chatlink;
+            this.chatlink = "";
+        },
         selectCard: function(index) {
             if(this.whitecards[index].selected) { // if the user clicked on the card that is already selected...
                 this.whitecards[index].selected = false; //just toggle it to not selected

@@ -2,6 +2,25 @@ ul {
     list-style-type: none;
 }
 
+button, input {
+    background-color: transparent;
+    color: black;
+    border: 2px solid black;
+    border-radius: 10px;
+    padding: 0.25em 0.5em;
+    margin-left: 0.3em;
+    margin-top: 0.3em;
+}
+
+.lobbyinput {
+    width: 10em;
+}
+
+#startbutton {
+    font-size: 125%;
+    padding: 0.5em;
+}
+
 #mycards {
     position: fixed;
     bottom: 0;
@@ -13,6 +32,10 @@ ul {
 	display: flex;
 	overflow-x: scroll;
 	padding: 0;
+}
+
+#chatlink {
+    margin: 1em;
 }
 
 .card {

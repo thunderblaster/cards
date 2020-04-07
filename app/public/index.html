@@ -2,48 +2,93 @@
 <html>
 
 <head>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width,initial-scale=1.0">
-    <link href="/css/styles.css" rel="stylesheet">
-    <title>Cards</title>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width,initial-scale=1.0">
+	<link href="/css/all.min.css" rel="stylesheet">
+	<link href="/css/styles.css" rel="stylesheet">
+	<title>Cards</title>
 </head>
 
 <body>
-    <div id="app">
-        <div v-if="!roomjoined"> <!-- this is the join a room view -->
-		<h1>Cards Game</h1>
-		<h3><i>(that totally doesn't infringe on anyone's intellectual property)</i></h3>
-            What's your name?<input v-model="name"><br>
-            Enter a room name to join:<input v-model="room" v-on:keyup.enter="joinroom"><button @click="joinroom">Join</button>
-            <h3>Tips:</h3>
-            <ul>
-                <li>The white cards are scrollable. On desktop, you mean need to click in between cards and then use your mouse wheel.</li>
-                <li>On mobile, switching to another app and then back to your browser sometimes reloads the page. Sign in to the same room with your same name to retain your score!</li>
-                <li>If the game isn't responding, try refreshing the page and starting again.</li>
-                <li>Feel free to send me bug reports, feature requests, or custom cards!</li>
-            </ul>
-            <div class="version"><p>Current Commit: {{version.hash}}<br>Commit Date: {{version.date}}</p></div>
-        </div>
-        <div v-if="roomjoined"> <!-- this is the playing cards view -->
-            <div id="playerlist"><ul><li><u>{{room}}:</u></li><li v-for="player in players" :key="player.name" :class="{ selected: player.selected, turn: player.turn}">{{player.name}} - {{player.points}}</li></ul></div>
-	    <div id="mycards">
-            <ul v-if="!turn&&!selectedcards.length"><li v-for="(card, index) in whitecards" class="card whitecard" @click="selectCard(index)" :class="{ selected: card.selected }" :key="card.card_id"><p v-html="card.card_text"></p></li></ul>
-		    <ul v-if="selectedcards.length&&turn"><li v-for="(card, index) in selectedcards" class="card whitecard" @click="selectWinningCard(index)" :class="{ selected: card.selected }" :key="card.name"><p v-html="card.card_text"></p><p v-if="!turn" class="whitecardname">{{card.name}}</p></li></ul>
-            <ul v-if="selectedcards.length&&!turn"><li v-for="(card, index) in selectedcards" class="card whitecard" :class="{ selected: card.selected }" :key="card.name"><p v-html="card.card_text"></p><p class="whitecardname">{{card.name}}</p></li></ul>
-            <h2 v-if="turn&&!selectedcards.length" class="turntext">It's your turn! Wait for other players to select white cards for you to choose from.</h2>
-            </div>
-	    <div id="blackcard" v-if="blackcard.length" class="card blackcard"><p v-html="blackcard[0].card_text"></p></div>
-            <button @click="startgame" v-if="!gamestarted">Start Game!</button>
-        </div>
-    </div>
-    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
-    <script src="/socket.io/socket.io.js"></script>
-    
-    <script src="/js/app.js"></script>
+	<div id="app">
+		<div v-if="!roomjoined">
+			<!-- this is the join a room view -->
+			<h1>Cards Game</h1>
+			<h3><i>(that totally doesn't infringe on anyone's intellectual property)</i></h3>
+			What's your name?<input v-model="name" class="lobbyinput"><br>
+			Enter a room name to join:<input v-model="room" v-on:keyup.enter="joinroom" class="lobbyinput"><button @click="joinroom"><i
+					class="fas fa-arrow-right"></i></button>
+			<h3>Tips:</h3>
+			<ul>
+				<li>The white cards are scrollable. On desktop, you mean need to click in between cards and then use
+					your mouse wheel.</li>
+				<li>On mobile, switching to another app and then back to your browser sometimes reloads the page. Sign
+					in to the same room with your same name to retain your score!</li>
+				<li>If the game isn't responding, try refreshing the page and starting again.</li>
+				<li>Feel free to send me bug reports, feature requests, or custom cards!</li>
+			</ul>
+			<div class="version">
+				<p>Current Commit: {{version.hash}}<br>Commit Date: {{version.date}}</p>
+			</div>
+		</div>
+		<div v-if="roomjoined">
+			<!-- this is the playing cards view -->
+			<div id="chatlink">
+				<div>Link To This Room's Chat:</div>
+				<div id="chatlinkgroup" v-if="chatlink"><a v-bind:href="chatlink"
+						target="_blank">{{chatlink}}</a><button @click="editchatlink"><i
+							class="fas fa-pencil-alt"></i></button></div>
+				<div id="chatlinkinputgroup" v-if="!chatlink"><input v-model="tempchatlink"
+						v-on:keyup.enter="submitchatlink" placeholder="https://hangouts.google.com/xxxxxxxx"><button
+						@click="submitchatlink"><i class="fas fa-check"></i></button><button @click="cancelchatlink"><i
+							class="fas fa-times"></i></button></div>
+			</div>
+			<div id="playerlist">
+				<ul>
+					<li><u>{{room}}:</u></li>
+					<li v-for="player in players" :key="player.name"
+						:class="{ selected: player.selected, turn: player.turn}">{{player.name}} - {{player.points}}
+					</li>
+				</ul>
+			</div>
+			<div id="mycards">
+				<ul v-if="!turn&&!selectedcards.length">
+					<li v-for="(card, index) in whitecards" class="card whitecard" @click="selectCard(index)"
+						:class="{ selected: card.selected }" :key="card.card_id">
+						<p v-html="card.card_text"></p>
+					</li>
+				</ul>
+				<ul v-if="selectedcards.length&&turn">
+					<li v-for="(card, index) in selectedcards" class="card whitecard" @click="selectWinningCard(index)"
+						:class="{ selected: card.selected }" :key="card.name">
+						<p v-html="card.card_text"></p>
+						<p v-if="!turn" class="whitecardname">{{card.name}}</p>
+					</li>
+				</ul>
+				<ul v-if="selectedcards.length&&!turn">
+					<li v-for="(card, index) in selectedcards" class="card whitecard"
+						:class="{ selected: card.selected }" :key="card.name">
+						<p v-html="card.card_text"></p>
+						<p class="whitecardname">{{card.name}}</p>
+					</li>
+				</ul>
+				<h2 v-if="turn&&!selectedcards.length" class="turntext">It's your turn! Wait for other players to select
+					white cards for you to choose from.</h2>
+			</div>
+			<div id="blackcard" v-if="blackcard.length" class="card blackcard">
+				<p v-html="blackcard[0].card_text"></p>
+			</div>
+			<button @click="startgame" v-if="!gamestarted" id="startbutton">Start Game!</button>
+		</div>
+	</div>
+	<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+	<script src="/socket.io/socket.io.js"></script>
+
+	<script src="/js/app.js"></script>
 </body>
-    <script>
-        var socket;
-    </script>
+<script>
+	var socket;
+</script>
 
 </html>
