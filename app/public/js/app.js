@@ -11,20 +11,23 @@ var app = new Vue({
         selectedcards: [],
         turn: false,
         version: {},
-        chatlink: "",
-        tempchatlink: "",
-        prevchatlink: ""
+        chatlink: {
+            current: "",
+            temp: "",
+            previous: "",
+            visible: true
+        }
     },
     methods: {
         submitchatlink() {
-            this.chatlink = this.tempchatlink;
+            this.chatlink.current = this.chatlink.temp;
         },
         cancelchatlink() {
-            this.chatlink = this.prevchatlink;
+            this.chatlink.current = this.chatlink.previous;
         },
         editchatlink() {
-            this.prevchatlink = this.chatlink;
-            this.chatlink = "";
+            this.chatlink.previous = this.chatlink.current;
+            this.chatlink.current = "";
         },
         selectCard: function(index) {
             if(this.whitecards[index].selected) { // if the user clicked on the card that is already selected...
@@ -114,6 +117,7 @@ var app = new Vue({
         Http.onreadystatechange = (e) => {
             app.version = JSON.parse(Http.responseText);
         }
+        setTimeout(function() {app.chatlink.visible=false;}, 12000);
     }
 });
 

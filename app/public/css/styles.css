@@ -16,6 +16,11 @@ button, input {
     width: 10em;
 }
 
+.hide-chat {
+    margin-left: 8em;
+    cursor: pointer;
+}
+
 #startbutton {
     font-size: 125%;
     padding: 0.5em;
@@ -36,6 +41,11 @@ button, input {
 
 #chatlink {
     margin: 1em;
+    position: absolute;
+    z-index: 10;
+    background: white;
+    padding: 0.5em;
+    border-radius: 10px;
 }
 
 .card {
@@ -108,7 +118,7 @@ button, input {
         min-width: 15vw;
     }
     .blackcard {
-        left: 30%;
+        left: 1em;
         width: 25vw;
         top: 0.5em;
     }
@@ -140,7 +150,7 @@ button, input {
         font-size: 100%;
     }
     .blackcard {
-        left: 50%;
+        left: 30%;
         top: 30%;
         min-height: 30vh;
         width: 40vw;
@@ -152,5 +162,18 @@ button, input {
     #playerlist > ul, #playerlist > ul > li {
         margin-left: 0;
         padding-left: 0;
+    }
+    #startbutton {
+        position: fixed;
+        right: 1em;
+        bottom: 1em;
+    }
+    .hide-chat {
+        position: fixed;
+        left: 45%;
+        margin-left: 0;
+    }
+    .chatlinkinput {
+        width: 70%;
     }
 }

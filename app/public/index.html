@@ -34,15 +34,19 @@
 		</div>
 		<div v-if="roomjoined">
 			<!-- this is the playing cards view -->
-			<div id="chatlink">
+			<div id="chatlink" v-if="chatlink.visible">
 				<div>Link To This Room's Chat:</div>
-				<div id="chatlinkgroup" v-if="chatlink"><a v-bind:href="chatlink"
-						target="_blank">{{chatlink}}</a><button @click="editchatlink"><i
+				<div id="chatlinkgroup" v-if="chatlink.current"><a v-bind:href="chatlink.current"
+						target="_blank">{{chatlink.current}}</a><button @click="editchatlink"><i
 							class="fas fa-pencil-alt"></i></button></div>
-				<div id="chatlinkinputgroup" v-if="!chatlink"><input v-model="tempchatlink"
-						v-on:keyup.enter="submitchatlink" placeholder="https://hangouts.google.com/xxxxxxxx"><button
+				<div id="chatlinkinputgroup" v-if="!chatlink.current"><input v-model="chatlink.temp"
+						v-on:keyup.enter="submitchatlink" placeholder="https://hangouts.google.com/xxxxxxxx" class="chatlinkinput"><button
 						@click="submitchatlink"><i class="fas fa-check"></i></button><button @click="cancelchatlink"><i
 							class="fas fa-times"></i></button></div>
+					<i class="fas fa-chevron-up fa-2x hide-chat" @click="chatlink.visible=false"></i>
+			</div>
+			<div id="chatlinkdropdown" v-if="!chatlink.visible">
+				<i class="fas fa-headset fa-2x hide-chat" @click="chatlink.visible=true"></i>
 			</div>
 			<div id="playerlist">
 				<ul>
