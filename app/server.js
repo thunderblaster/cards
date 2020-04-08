@@ -85,6 +85,9 @@ io.on('connection', function (socket) { //need to keep track server side of when
         }
         
     });
+    socket.on('chatlink', function(msg) {
+        io.to(msg.room).emit('chatlink', msg);
+    });
     socket.on('startgame', function () {
         io.to(socket.room).emit('gamestarted');
         rooms[socket.room].gamestarted = true;
@@ -129,13 +132,18 @@ io.on('connection', function (socket) { //need to keep track server side of when
         io.to(socket.id).emit('dealcards', cardsToReturn);
     });
     socket.on('drawfivecards', function () {
-        let cardsToReturn = [];
-        for(let i=0; i<7; i++) {
-            let index = getRandomIndex(rooms[socket.room].whitecards);
-            let cardDrawn = rooms[socket.room].whitecards.splice(index, 1);
-            cardsToReturn.push(cardDrawn[0]);
+        if(socket.room) {
+            let cardsToReturn = [];
+            for(let i=0; i<7; i++) {
+                let index = getRandomIndex(rooms[socket.room].whitecards);
+                let cardDrawn = rooms[socket.room].whitecards.splice(index, 1);
+                cardsToReturn.push(cardDrawn[0]);
+            }
+            io.to(socket.id).emit('dealcards', cardsToReturn);
+        } else {
+            io.to(socket.id).emit('whoareyou');
         }
-        io.to(socket.id).emit('dealcards', cardsToReturn);
+        
     });
     socket.on('drawblack', function() {
         let cardsToReturn = [];
@@ -237,11 +245,13 @@ function createRoom (roomname) {
     rooms[roomname] = {};
     rooms[roomname].userlist = [];
     rooms[roomname].dclist = [];
+    rooms[roomname].whitecards = [];
+    rooms[roomname].blackcards = [];
     pool.query('SELECT * FROM white_cards', function (error, results, fields) {
-        rooms[roomname].whitecards = results;
+        rooms[roomname].whitecards = rooms[roomname].whitecards.concat(results);
     });
     pool.query('SELECT * FROM black_cards', function (error, results, fields) {
-        rooms[roomname].blackcards = results;
+        rooms[roomname].blackcards = rooms[roomname].blackcards.concat(results);
     });
 }
 

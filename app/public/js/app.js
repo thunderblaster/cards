@@ -21,6 +21,7 @@ var app = new Vue({
     methods: {
         submitchatlink() {
             this.chatlink.current = this.chatlink.temp;
+            socket.emit('chatlink', this.chatlink.current);
         },
         cancelchatlink() {
             this.chatlink.current = this.chatlink.previous;
@@ -46,7 +47,6 @@ var app = new Vue({
         selectWinningCard: function(index) {
             socket.emit('winningcard', app.selectedcards[index]);
             app.turn = false;
-            // needs more shit
         },
         startgame: function () {
             socket.emit('startgame');
@@ -61,15 +61,16 @@ var app = new Vue({
                 return;
             }
             this.room = this.room.toLowerCase();
-            /*history.pushState({
-                id: 'room'
-            }, 'title', '/' + this.room); */
             
             socket = io();
             socket.on('userlist', function(msg) {
 		        app.players = msg;
 
             })
+            socket.on('chatlink', function(msg) {
+                app.chatlink.current = msg;
+            })
+
             socket.on('yourturn', function() {
                 app.turn = true;
                 if(app.blackcard.length===0) {
