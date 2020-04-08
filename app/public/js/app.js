@@ -69,6 +69,9 @@ var app = new Vue({
             })
             socket.on('chatlink', function(msg) {
                 app.chatlink.current = msg;
+                if(!app.chatlink.visible) {
+                    app.chatlink.visible = true;
+                }
             })
 
             socket.on('yourturn', function() {

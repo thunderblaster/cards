@@ -86,7 +86,7 @@ io.on('connection', function (socket) { //need to keep track server side of when
         
     });
     socket.on('chatlink', function(msg) {
-        io.to(msg.room).emit('chatlink', msg);
+        io.to(socket.room).emit('chatlink', msg);
     });
     socket.on('startgame', function () {
         io.to(socket.room).emit('gamestarted');
