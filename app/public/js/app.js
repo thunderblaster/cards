@@ -31,18 +31,23 @@ var app = new Vue({
             this.chatlink.current = "";
         },
         selectCard: function(index) {
-            if(this.whitecards[index].selected) { // if the user clicked on the card that is already selected...
-                this.whitecards[index].selected = false; //just toggle it to not selected
-                socket.emit('selected', false);
-                this.$forceUpdate(); // i don't know why Vue isn't automatically updating here, but it's not
+            if(!this.gamestarted){
+                alert("Wait to select a card until the game has started, cheater.");
                 return;
+            } else {
+                if(this.whitecards[index].selected) { // if the user clicked on the card that is already selected...
+                    this.whitecards[index].selected = false; //just toggle it to not selected
+                    socket.emit('selected', false);
+                    this.$forceUpdate(); // i don't know why Vue isn't automatically updating here, but it's not
+                    return;
+                }
+                for(let i=0; i<this.whitecards.length; i++) { //otherwise, let's deselect any other currently selected cards...
+                    this.whitecards[i].selected = false;
+                }
+                this.whitecards[index].selected = true; //and select the one the user clicked
+                socket.emit('selected', this.whitecards[index].card_text);
+                this.$forceUpdate(); // i don't know why Vue isn't automatically updating here, but it's not
             }
-            for(let i=0; i<this.whitecards.length; i++) { //otherwise, let's deselect any other currently selected cards...
-                this.whitecards[i].selected = false;
-            }
-            this.whitecards[index].selected = true; //and select the one the user clicked
-            socket.emit('selected', this.whitecards[index].card_text);
-            this.$forceUpdate(); // i don't know why Vue isn't automatically updating here, but it's not
         },
         selectWinningCard: function(index) {
             socket.emit('winningcard', app.selectedcards[index]);
