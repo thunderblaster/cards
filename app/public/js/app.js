@@ -136,5 +136,4 @@ function clearBetweenRounds() {
     if(app.turn) {
         window.setTimeout(()=>{socket.emit('drawblack');}, 700);
     }
-    
 }
