@@ -113,6 +113,41 @@ button, input {
   left: 1em;
 }
 
+#eggplant, #title {
+  display: inline;
+}
+
+#title {
+  font-size: 300%;
+}
+
+#eggplant {
+  font-size: 200%;
+  animation-name: growAndBlacken;
+  animation-duration: 10s;
+  animation-delay: 2s;
+  animation-fill-mode: forwards;
+}
+
+@keyframes growAndBlacken {
+  from {
+    font-size: 200%;
+  }
+  to {
+    font-size: 1000%;
+    filter: contrast(0) sepia(1) saturate(0) brightness(.05);
+  }
+}
+
+.version {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 4em;
+}
+
+
 @media (max-width: 900px) and (orientation: landscape) {
   .card {
     font-size: 100%;
