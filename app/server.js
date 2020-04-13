@@ -26,7 +26,8 @@ app.get('/', function (req, res) { // Serve index.html from the public folder wh
 app.get('/version', function (req, res) { // Serve the git information provided as command line args at /version
     let version = {
         hash: process.argv[2],
-        date: process.argv[3]
+        date: process.argv[3],
+        branch: process.argv[4]
     }
     res.send(version);
 });

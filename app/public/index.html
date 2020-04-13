@@ -32,7 +32,7 @@
 				@click="joinroom"><i class="fas fa-arrow-right"></i></button></div>
 			<!-- the v-on:keyup.enter listens for the Enter keypress and calls the same function as clicking the button -->
 			<div class="version">
-				<p>Current Commit: {{version.hash}} - Commit Date: {{version.date}}</p>
+				<p>Branch: {{version.branch}} - Commit: {{version.hash}} - Date: {{version.date}}</p>
 				<!-- These values were injected into the Docker build, exposed to the container as environment variables,... -->
 			</div>
 			<!-- ...passed to Node as command line arguments, served to the client via an endpoint that Vue sends an AJAX to and updates the client-side variable -->
