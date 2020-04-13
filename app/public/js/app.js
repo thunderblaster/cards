@@ -102,7 +102,7 @@ var app = new Vue({
                 app.selectedcards = msg; // Replace our array with the one from the server
                 let cardIndex = app.whitecards.findIndex(element => element.selected === true); // Now that this is commited, remove the card we selected from our hand. 
                 app.whitecards.splice(cardIndex, 1); // We don't want to splice the card on selection, because it can be deselected
-                socket.emit('drawonecard'); // Request another white card from the server
+                socket.emit('drawonecard', this.name); // Request another white card from the server
             });
             socket.on('winningcard', function(msg) { // The card that the czar selected to win
                 let cardIndex = app.selectedcards.findIndex(element => element.name === msg.name); // Find this card in our client-side array
@@ -115,7 +115,7 @@ var app = new Vue({
             })
             // Okay, listeners set up
             socket.emit('joinroom', {room: this.room, name: this.name}); // let's tell the server we're joining the room
-            window.setTimeout(()=>{socket.emit('drawfivecards');}, 1000); // ask for cards, but give the server a moment to ensure the room gets created and we get joined to it
+            window.setTimeout(()=>{socket.emit('drawfivecards', this.name);}, 1000); // ask for cards, but give the server a moment to ensure the room gets created and we get joined to it
             this.roomjoined = true; // update the client that we've joined a room to update the view
         },
     },
