@@ -122,19 +122,19 @@ button, input {
 }
 
 #eggplant {
-  font-size: 200%;
+  font-size: 300%;
   animation-name: growAndBlacken;
-  animation-duration: 10s;
+  animation-duration: 5s;
   animation-delay: 2s;
   animation-fill-mode: forwards;
 }
 
 @keyframes growAndBlacken {
   from {
-    font-size: 200%;
+    font-size: 300%;
   }
   to {
-    font-size: 1000%;
+    font-size: 800%;
     filter: contrast(0) sepia(1) saturate(0) brightness(.05);
   }
 }
