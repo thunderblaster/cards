@@ -23,4 +23,7 @@ ENV env_hash=$git_hash
 ARG git_date
 ENV env_date=$git_date
 
-CMD [ "sh", "-c", "node app/server.js ${env_hash} ${env_date} 2>&1 | tee -a /log/app.log" ]
+ARG git_branch
+ENV env_branch=$git_branch
+
+CMD [ "sh", "-c", "node app/server.js ${env_hash} ${env_date} ${env_branch} 2>&1 | tee -a /log/app.log" ]

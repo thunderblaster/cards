@@ -1,104 +1,115 @@
 <!DOCTYPE html>
 <html>
 <head>
+	<!-- Global site tag (gtag.js) - Google Analytics -->
+	<script async src="https://www.googletagmanager.com/gtag/js?id=UA-163364396-1"></script>
+	<script>
+		if (document.location.hostname.search("biggerblacker.com") !== -1) {
+			window.dataLayer = window.dataLayer || [];
+			function gtag() { dataLayer.push(arguments); }
+			gtag('js', new Date());
+
+			gtag('config', 'UA-163364396-1');
+		}
+	</script>
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
 	<meta name="viewport" content="width=device-width,initial-scale=1.0">
-	<link href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" rel="stylesheet">
-	<link href="/css/all.min.css" rel="stylesheet">
-	<link href="/css/styles.css" rel="stylesheet">
-	<title>Cards</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" rel="stylesheet">
+	<link href="/css/all.min.css" rel="stylesheet"> <!-- Font Awesome CSS -->
+	<link href="/css/styles.css" rel="stylesheet"> <!-- Custom CSS -->
+	<title>Bigger Blacker</title>
 </head>
 <body>
 	<div id="app">
 		<div v-if="!roomjoined">
-    		<div class="container">
-        		<div class="row">
-            		<div class="col-12">
-            			<!-- this is the join a room view -->
-            			<h1>Bigger, Blacker Card Game</h1>
-            			<h3><i>(a totally unique idea)</i></h3>
-            			What's your name?<input v-model="name" class="lobbyinput"><br />
-            			Enter a room name to join:<input v-model="room" v-on:keyup.enter="joinroom" class="lobbyinput">
-            			<button @click="joinroom"><i class="fas fa-arrow-right"></i></button>
-            			<h3>Tips:</h3>
-            			<ul>
-            				<li>The white cards are scrollable. On desktop, you mean need to click in between cards and then use
-            					your mouse wheel.</li>
-            				<li>On mobile, switching to another app and then back to your browser sometimes reloads the page. Sign
-            					in to the same room with your same name to retain your score!</li>
-            				<li>If the game isn't responding, try refreshing the page and starting again.</li>
-            				<li>Issues or feature requests can be submitted to <a href='https://github.com/thunderblaster/cards/issues'>GitHub</a></li>
-            			</ul>
-            			<div class="version">
-            				<p>Current Commit: {{version.hash}}<br>Commit Date: {{version.date}}</p>
-            			</div>
-            		</div>
-        		</div>
-    		</div>
+			<!-- this is the join a room view -->
+			<p id="eggplant">🍆</p>
+			<h1 id="title">Bigger. Blacker.</h1>
+			<div>What's your name?<input v-model="name" class="lobbyinput"><br>
+			Enter a room name to join:<input v-model="room" v-on:keyup.enter="joinroom" class="lobbyinput"><button
+				@click="joinroom"><i class="fas fa-arrow-right"></i></button></div>
+			<!-- the v-on:keyup.enter listens for the Enter keypress and calls the same function as clicking the button -->
+			<div class="version">
+				<p>Branch: {{version.branch}} - Commit: {{version.hash}} - Date: {{version.date}}</p>
+				<!-- These values were injected into the Docker build, exposed to the container as environment variables,... -->
+			</div>
+			<!-- ...passed to Node as command line arguments, served to the client via an endpoint that Vue sends an AJAX to and updates the client-side variable -->
 		</div>
 		<div v-if="roomjoined">
 			<!-- this is the playing cards view -->
-			<div id="game-header">
-    			<button @click="startgame" v-if="!gamestarted" id="startbutton">Start Game!</button>
-    			<div id="chatlink" v-if="chatlink.visible">
-    				<div>Link To This Room's Chat:</div>
-    				<div id="chatlinkgroup" v-if="chatlink.current">
-        				<a v-bind:href="chatlink.current" target="_blank">{{chatlink.current}}</a>
-        				<button @click="editchatlink"><i class="fas fa-pencil-alt"></i></button>
-                    </div>
-    				<div id="chatlinkinputgroup" v-if="!chatlink.current">
-        				<input v-model="chatlink.temp" v-on:keyup.enter="submitchatlink" placeholder="https://hangouts.google.com/xxxxxxxx" class="chatlinkinput" />
-        				<button @click="submitchatlink"><i class="fas fa-check"></i></button>
-        				<button @click="cancelchatlink"><i class="fas fa-times"></i></button>
-                    </div>
-                    <i class="fas fa-chevron-up fa-2x hide-chat" @click="chatlink.visible=false"></i>
-    			</div>
-    			<div id="chatlinkdropdown" v-if="!chatlink.visible">
-    				<i class="fas fa-headset fa-2x hide-chat" @click="chatlink.visible=true"></i>
-    			</div>    			
-    			<div id="playerlist">
-    				<ul>
-    					<li><u>{{room}}:</u></li>
-    					<li v-for="player in players" :key="player.name" :class="{ selected: player.selected, turn: player.turn}">{{player.name}} - {{player.points}}</li>
-    				</ul>
-    			</div>
+			<div id="chatlink" v-if="chatlink.visible">
+				<!-- Only show this if the chatlink variable is true. Otherwise, show the icon to show this -->
+				<div>Link To This Room's Chat:</div>
+				<div id="chatlinkgroup" v-if="chatlink.current"><a v-bind:href="chatlink.current"
+						target="_blank">{{chatlink.current}}</a><button @click="editchatlink"><i
+							class="fas fa-pencil-alt"></i></button></div>
+				<!-- If there is currently a link, display it as an anchor with a button to edit it -->
+				<div id="chatlinkinputgroup" v-if="!chatlink.current"><input v-model="chatlink.temp"
+						v-on:keyup.enter="submitchatlink" placeholder="https://hangouts.google.com/xxxxxxxx"
+						class="chatlinkinput"><button @click="submitchatlink"><i
+							class="fas fa-check"></i></button><button @click="cancelchatlink"><i
+							class="fas fa-times"></i></button></div>
+				<!-- If there is not currently a link, display an input to enter one -->
+				<i class="fas fa-chevron-up fa-2x hide-chat" @click="chatlink.visible=false"></i>
+				<!-- Icon to hide the chatlink menu -->
 			</div>
-			<div id="game-content">
-    			<div id="mycards">
-    				<ul v-if="!turn&&!selectedcards.length">
-    					<li v-for="(card, index) in whitecards" class="card whitecard" @click="selectCard(index)"
-    						:class="{ selected: card.selected }" :key="card.card_id">
-    						<p v-html="card.card_text"></p>
-    					</li>
-    				</ul>
-    				<ul v-if="selectedcards.length&&turn">
-    					<li v-for="(card, index) in selectedcards" class="card whitecard" @click="selectWinningCard(index)"
-    						:class="{ selected: card.selected }" :key="card.name">
-    						<p v-html="card.card_text"></p>
-    						<p v-if="!turn" class="whitecardname">{{card.name}}</p>
-    					</li>
-    				</ul>
-    				<ul v-if="selectedcards.length&&!turn">
-    					<li v-for="(card, index) in selectedcards" class="card whitecard"
-    						:class="{ selected: card.selected }" :key="card.name">
-    						<p v-html="card.card_text"></p>
-    						<p class="whitecardname">{{card.name}}</p>
-    					</li>
-    				</ul>
-    				<h2 v-if="turn&&!selectedcards.length" class="turntext">It's your turn! Wait for other players to select white cards for you to choose from.</h2>
-    			</div>
-    			<div id="blackcard" v-if="blackcard.length" class="card blackcard">
-    				<p v-html="blackcard[0].card_text"></p>
-    			</div>
+			<div id="chatlinkdropdown" v-if="!chatlink.visible">
+				<!-- If chatlink is currently hidden -->
+				<i class="fas fa-headset fa-2x hide-chat" @click="chatlink.visible=true"></i> <!-- Unhide on click -->
 			</div>
+			<div id="playerlist">
+				<!-- The playerlist in the top right -->
+				<ul>
+					<li><u>{{room}}:</u></li> <!-- The room name -->
+					<li v-for="player in players" :key="player.name"
+						:class="{ selected: player.selected, turn: player.turn}">{{player.name}} - {{player.points}}
+					</li> <!-- List the name and points of each player in array -->
+				</ul>
+			</div>
+			<div id="mycards">
+				<!-- This is the main div where the white cards are held, either those in your hand or those submitted to the Card Czar -->
+				<ul v-if="!turn&&!selectedcards.length">
+					<!-- If it's not your turn and players are not done submitting cards to the Czar. This displays the cards in your hand -->
+					<li v-for="(card, index) in whitecards" class="card whitecard" @click="selectCard(index)"
+						:class="{ selected: card.selected }" :key="card.card_id">
+						<p v-html="card.card_text"></p>
+					</li>
+				</ul>
+				<ul v-if="selectedcards.length&&turn">
+					<!-- If it is your turn and cards have been submitted. This displays the selected cards and allows you to select a winner -->
+					<li v-for="(card, index) in selectedcards" class="card whitecard" @click="selectWinningCard(index)"
+						:class="{ selected: card.selected }" :key="card.name">
+						<p v-html="card.card_text"></p>
+						<p v-if="!turn" class="whitecardname">{{card.name}}</p>
+					</li>
+				</ul>
+				<ul v-if="selectedcards.length&&!turn">
+					<!-- If it is not turn, but players are done submitting cards.  This displays all the submitted cards along with who submitted them,... -->
+					<li v-for="(card, index) in selectedcards" class="card whitecard"
+						:class="{ selected: card.selected }" :key="card.name">
+						<!-- but you cannot choose a winner (because it's not your turn!) -->
+						<p v-html="card.card_text"></p>
+						<p class="whitecardname">{{card.name}}</p>
+					</li>
+				</ul>
+				<h2 v-if="turn&&!selectedcards.length" class="turntext">It's your turn! Wait for other players to select
+					white cards for you to choose from.</h2>
+				<!-- If it is your turn, but players are not done submitting. Display a message to be patient -->
+			</div>
+			<div id="blackcard" v-if="blackcard.length" class="card blackcard">
+				<!-- This shows the black card. -->
+				<p v-html="blackcard[0].card_text"></p>
+			</div>
+			<button @click="startgame" v-if="!gamestarted" id="startbutton">Start Game!</button>
+			<!-- If the game hasn't yet started, show a button to start it -->
 		</div>
 	</div>
-	<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
-	<script src="/socket.io/socket.io.js"></script>
-	<script src="/js/app.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script> <!-- Load Vue -->
+	<script src="/socket.io/socket.io.js"></script> <!-- Load Socket -->
+	<script src="/js/app.js"></script> <!-- Load custom JS -->
 </body>
 <script>
-	var socket;
+	var socket; // This ensures socket is a global that we can call from wherever we need to later
 </script>
 </html>
