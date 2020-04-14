@@ -138,5 +138,4 @@ function clearBetweenRounds() {
     if(app.turn) {
         window.setTimeout(()=>{socket.emit('drawblack');}, 700); // This setTimeout is a lazy hack to fix a race condition where the black card would sometimes
     } // get drawn by a very fast client before the previous black card would have been removed by a very slow client, causing the newly drawn card to be deleted
-    
 }

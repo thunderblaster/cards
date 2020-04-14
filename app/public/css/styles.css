@@ -137,10 +137,9 @@ button, input {
   }
   to {
     font-size: 800%;
-    filter: contrast(0) sepia(1) saturate(0) brightness(.05);
+    filter: contrast(0) sepia(1) saturate(0) brightness(0.05);
   }
 }
-
 .version {
   position: fixed;
   left: 0;
@@ -148,7 +147,6 @@ button, input {
   bottom: 0;
   height: 4em;
 }
-
 
 @media (max-width: 900px) and (orientation: landscape) {
   .card {
