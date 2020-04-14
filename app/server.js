@@ -176,9 +176,10 @@ io.on('connection', function (socket) { // The socket.io connection is first cal
                         let index = getRandomIndex(rooms[socket.room].whitecards);
                         let cardDrawn = rooms[socket.room].whitecards.splice(index, 1);
                         
-                        //We've got an edge case where a user could end up with 14 cards, seems to be an issue with three people
-                        rooms[socket.room].userlist[i].hand.push(cardDrawn[0]); //Add drawn card to the user's hand on serverside
-                        cardsToReturn.push(cardDrawn[0]);
+                        if(rooms[socket.room].userlist[i].hand == undefined || rooms[socket.room].userlist[i].hand.length < 7){
+                            rooms[socket.room].userlist[i].hand.push(cardDrawn[0]); //Add drawn card to the user's hand on serverside
+                            cardsToReturn.push(cardDrawn[0]);
+                        }
 
                     }
                     io.to(socket.id).emit('dealcards', cardsToReturn);
