@@ -124,7 +124,13 @@ io.on('connection', function (socket) { // The socket.io connection is first cal
             let selectedcards = []; // Here's a handy (but somewhat redundant) array to hold all the cards selected for play with this black card
             for (let i = 0; i < rooms[socket.room].userlist.length; i++) { // Loop through all users in room
                 if (rooms[socket.room].userlist[i].selected) { // If they've selected a card (remember, one is the czar and will not have)
-                    selectedcards.push({ name: rooms[socket.room].userlist[i].name, card_text: rooms[socket.room].userlist[i].selected, selected: false }); // Push to array
+                    
+                    for(let j = 0; j < rooms[socket.room].userlist[i].hand.length; j++){
+                        if (rooms[socket.room].userlist[i].hand[j].card_text == rooms[socket.room].userlist[i].selected){
+                            //rooms[socket.room].userlist[i].hand.splice(j, 1); //Remove selected card
+                            selectedcards.push({ name: rooms[socket.room].userlist[i].name, card_text: rooms[socket.room].userlist[i].selected, selected: false, card_id :  rooms[socket.room].userlist[i].hand[j].card_id}); // Push to array
+                        }
+                    }
                 }
             }
             shuffle(selectedcards); // This is important, otherwise the white cards will be displayed in the order of the players in the userlist array which means they wouldn't be anonymous
@@ -169,8 +175,11 @@ io.on('connection', function (socket) { // The socket.io connection is first cal
                     for (let j = 0; j < 7; j++) {
                         let index = getRandomIndex(rooms[socket.room].whitecards);
                         let cardDrawn = rooms[socket.room].whitecards.splice(index, 1);
+                        
+                        //We've got an edge case where a user could end up with 14 cards, seems to be an issue with three people
                         rooms[socket.room].userlist[i].hand.push(cardDrawn[0]); //Add drawn card to the user's hand on serverside
                         cardsToReturn.push(cardDrawn[0]);
+
                     }
                     io.to(socket.id).emit('dealcards', cardsToReturn);
                 } else {
@@ -210,11 +219,11 @@ io.on('connection', function (socket) { // The socket.io connection is first cal
                 // A better approach would likely be to tie the username to the selected card when it's announced to the room.
                 io.to(socket.room).emit('winningcard', msg); // Announce the winning card to the room
                 
-                for(let j = 0; j < 7; j++){
+                for(let j = 0; j < rooms[socket.room].userlist[i].hand.length; j++){
                     if(rooms[socket.room].userlist[i].hand[j].card_text == msg.card_text) // Search for the winning card from their hand
                     {
-                        console.log("Winning card selected, room: " + socket.room + " name: "+ rooms[socket.room].userlist[i].name + " black_card: " + rooms[socket.room].currentBlack[0].card_id + " white_card: " + rooms[socket.room].userlist[i].hand[j].card_id);
-                        pool.query('INSERT INTO log_card (name, room, black_card, winning_white_card) VALUES (?, ?, ?, ?)', [rooms[socket.room].userlist[i].name, socket.room, rooms[socket.room].currentBlack[0].card_id, rooms[socket.room].userlist[i].hand[j].card_id], function (error, results, fields) { // Save what card won to the database
+                        console.log("Winning card selected, room: " + socket.room + " name: "+ rooms[socket.room].userlist[i].name + " black_card: " + rooms[socket.room].currentBlack[0].card_id + " white_card: " + msg.card_id);
+                        pool.query('INSERT INTO log_card (name, room, black_card, winning_white_card) VALUES (?, ?, ?, ?)', [rooms[socket.room].userlist[i].name, socket.room, rooms[socket.room].currentBlack[0].card_id, msg.card_id], function (error, results, fields) { // Save what card won to the database
                             if(error !== null){
                                 console.log(error);
                             }
