@@ -1,204 +1,226 @@
-* {
-    padding: 0;
-    margin: 0;
-    list-style: none;
-}
-
 ul {
-    list-style-type: none;
+  list-style-type: none;
 }
 
 button, input {
-    background-color: transparent;
-    color: black;
-    border: 2px solid black;
-    border-radius: 10px;
-    padding: 0.25em 0.5em;
-    margin-left: 0.3em;
-    margin-top: 0.3em;
+  background-color: transparent;
+  color: black;
+  border: 2px solid black;
+  border-radius: 10px;
+  padding: 0.25em 0.5em;
+  margin-left: 0.3em;
+  margin-top: 0.3em;
 }
 
 .lobbyinput {
-    width: 10em;
+  width: 10em;
 }
 
-#game-header {
-    .hide-chat {
-        margin-left: 8em;
-        cursor: pointer;
-    }
-    
-    #startbutton {
-        font-size: 125%;
-        padding: 0.5em;
-    }
-    
-    #chatlink {
-        margin: 1em;
-        // position: absolute;
-        z-index: 10;
-        background: white;
-        padding: 0.5em;
-        border-radius: 10px;
-    }   
-    
-    #playerlist {
-        // position: fixed;
-        top: 0;
-        right: 0;
-        width: 12em;
-        border: 3px solid white;
-        background-color: black;
-        color: white;
-        border-bottom-left-radius: 10px;
-        max-height: 50vh;
-        overflow-y: scroll;
-    }
+.hide-chat {
+  margin-left: 8em;
+  cursor: pointer;
 }
 
-#game-content {
-    #mycards {
-        // position: fixed;
-        bottom: 0;
-        left: 0;
-        right: 0;
-    }
-    
-    #mycards > ul {
-    	display: flex;
-    	overflow-x: scroll;
-    	padding: 0;
-    }
-    
-    .card {
-        min-height: 40vh;
-        max-height: 45vh;
-        min-width: 10vw; 
-        max-width: 20vw;
-        border-radius: 10px;
-        padding: 1em;
-        margin-left: 0.25em;
-        margin-right: 0.25em;
-        
-        cursor: pointer;
-        float: left;
-        font-size: 120%;
-    }
-    
-    .whitecard {
-        border: 3px solid black;
-    }
-    
-    .whitecardname {
-        color: red;
-    }
-    
-    .blackcard {
-        // position: fixed;
-        top: 2em;
-        left: 40%;
-        background-color: black;
-        color: white;
-        border: 3px solid white;
-        vertical-align: text-bottom;
-    }
-    
-    .selected {
-        background-color: #003399;
-        color: white;
-        border-color: white;
-    }
-    
-    .turn {
-        font-weight: bold;
-    }
-    
-    .turn:before {
-        content: "=>";
-    }
-    
-    .turntext {
-        // position: fixed;
-        bottom: 3em;
-        left: 1em;
-    }
+#startbutton {
+  font-size: 125%;
+  padding: 0.5em;
+}
+
+#mycards {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+}
+
+#mycards > ul {
+  display: flex;
+  overflow-x: scroll;
+  padding: 0;
+}
+
+#chatlink {
+  margin: 1em;
+  position: absolute;
+  z-index: 10;
+  background: white;
+  padding: 0.5em;
+  border-radius: 10px;
+  left: 9em;
+}
+
+.card {
+  min-height: 40vh;
+  max-height: 45vh;
+  min-width: 10vw;
+  max-width: 20vw;
+  border-radius: 10px;
+  padding: 1em;
+  margin-left: 0.25em;
+  margin-right: 0.25em;
+  cursor: pointer;
+  float: left;
+  font-size: 120%;
+}
+
+.whitecard {
+  border: 3px solid black;
+}
+
+.whitecardname {
+  color: red;
+}
+
+.blackcard {
+  position: fixed;
+  top: 2em;
+  left: 40%;
+  background-color: black;
+  color: white;
+  border: 3px solid white;
+  vertical-align: text-bottom;
+}
+
+.selected {
+  background-color: #003399;
+  color: white;
+  border-color: white;
+}
+
+#playerlist {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 12em;
+  border: 3px solid white;
+  background-color: black;
+  color: white;
+  border-bottom-left-radius: 10px;
+  max-height: 50vh;
+  overflow-y: scroll;
+}
+
+.turn {
+  font-weight: bold;
+}
+
+.turn:before {
+  content: "=>";
+}
+
+.turntext {
+  position: fixed;
+  bottom: 3em;
+  left: 1em;
+}
+
+#eggplant, #title {
+  display: inline;
+}
+
+#title {
+  font-size: 300%;
+}
+
+#eggplant {
+  font-size: 300%;
+  animation-name: growAndBlacken;
+  animation-duration: 5s;
+  animation-delay: 2s;
+  animation-fill-mode: forwards;
+}
+
+@keyframes growAndBlacken {
+  from {
+    font-size: 300%;
+  }
+  to {
+    font-size: 800%;
+    filter: contrast(0) sepia(1) saturate(0) brightness(.05);
+  }
+}
+
+.version {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 4em;
 }
 
 
-@media (max-width: 900px) {
-    .card {
-        font-size: 100%;
-        margin-bottom: -1em;
-        min-width: 15vw;
-    }
-    
-    .blackcard {
-        left: 1em;
-        width: 25vw;
-        top: 0.5em;
-    }
-    
-    #mycards {
-        bottom: -0.5em;
-    }
-}
+@media (max-width: 900px) and (orientation: landscape) {
+  .card {
+    font-size: 100%;
+    margin-bottom: -1em;
+    min-width: 15vw;
+  }
 
-@media (max-width: 700px) {
-    #mycards {
-        top: 1.5em;
-        bottom: 0;
-        left: -1em;
-        width: 50vw;
-        overflow-y: scroll;
-    }
-    
-    #mycards > ul {
-	    flex-direction: column;
-        overflow-x: hidden;
-    }
-    
-    .card {
-        min-height: 12vh;
-        max-height: 15vh;
-        min-width: 35vw;
-        max-width: 40vw;
-        margin-left: 0;
-        margin-top: 0.5em;
-        margin-bottom: 0.5em;
-        font-size: 100%;
-    }
-    
-    .blackcard {
-        left: 30%;
-        top: 30%;
-        min-height: 30vh;
-        width: 40vw;
-    }
-    
-    #playerlist {
-        width: 40vw;
-        border: 3px solid black;
-    }
-    
-    #playerlist > ul,
-    #playerlist > ul > li {
-        margin-left: 0;
-        padding-left: 0;
-    }
-    
-    #startbutton {
-        // position: fixed;
-        right: 1em;
-        bottom: 1em;
-    }
-    
-    .hide-chat {
-        // position: fixed;
-        left: 45%;
-        margin-left: 0;
-    }
-    
-    .chatlinkinput {
-        width: 70%;
-    }
+  .blackcard {
+    left: 1em;
+    width: 25vw;
+    top: 0.5em;
+  }
+
+  #mycards {
+    bottom: -0.5em;
+  }
+}
+@media (max-width: 700px) and (orientation: portrait) {
+  #mycards {
+    top: 1.5em;
+    bottom: 0;
+    left: -1em;
+    width: 50vw;
+    overflow-y: scroll;
+  }
+
+  #mycards > ul {
+    flex-direction: column;
+    overflow-x: hidden;
+  }
+
+  .card {
+    min-height: 12vh;
+    max-height: 15vh;
+    min-width: 35vw;
+    max-width: 40vw;
+    margin-left: 0;
+    margin-top: 0.5em;
+    margin-bottom: 0.5em;
+    font-size: 100%;
+  }
+
+  .blackcard {
+    left: 40%;
+    top: 30%;
+    min-height: 30vh;
+    width: 40vw;
+  }
+
+  #playerlist {
+    width: 40vw;
+    border: 3px solid black;
+  }
+
+  #playerlist > ul, #playerlist > ul > li {
+    margin-left: 0;
+    padding-left: 0;
+  }
+
+  #startbutton {
+    position: fixed;
+    right: 1em;
+    bottom: 1em;
+  }
+
+  .hide-chat {
+    position: fixed;
+    left: 45%;
+    margin-left: 0;
+  }
+
+  .chatlinkinput {
+    width: 70%;
+  }
 }
