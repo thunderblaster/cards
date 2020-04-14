@@ -128,6 +128,7 @@ button, input {
   animation-duration: 5s;
   animation-delay: 2s;
   animation-fill-mode: forwards;
+  float: right;
 }
 
 @keyframes growAndBlacken {
