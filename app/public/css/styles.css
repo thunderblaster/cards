@@ -12,6 +12,11 @@ button, input {
   margin-top: 0.3em;
 }
 
+.header {
+  background-color: black;
+  color: white;
+}
+
 .lobbyinput {
   width: 10em;
 }
@@ -114,7 +119,7 @@ button, input {
   left: 1em;
 }
 
-#eggplant, #title {
+#title {
   display: inline;
 }
 
@@ -126,7 +131,7 @@ button, input {
   font-size: 300%;
   animation-name: growAndBlacken;
   animation-duration: 5s;
-  animation-delay: 2s;
+  animation-delay: 10s;
   animation-fill-mode: forwards;
   float: right;
 }
@@ -136,16 +141,16 @@ button, input {
     font-size: 300%;
   }
   to {
-    font-size: 800%;
+    font-size: 700%;
     filter: contrast(0) sepia(1) saturate(0) brightness(0.05);
   }
 }
 .version {
   position: fixed;
-  left: 0;
-  right: 0;
+  left: 2em;
+  right: 2em;
   bottom: 0;
-  height: 4em;
+  height: 10em;
 }
 
 @media (max-width: 900px) and (orientation: landscape) {

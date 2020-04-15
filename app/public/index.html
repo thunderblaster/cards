@@ -24,19 +24,30 @@
 		<div v-if="!roomjoined">
 			<!-- this is the join a room view -->
 			<div class="container">
+				<div class="header">
+					<h1 id="title">Bigger. Blacker.</h1>
+				</div>
     			<div class="row">
+					
         			<div class="col-12">
-            			<p id="eggplant">🍆</p>
-            			<h1 id="title">Bigger. Blacker.</h1>
+            			        			
             			<div>
                 			What's your name? <input v-model="name" class="lobbyinput"><br />
                             Enter a room name to join: <input v-model="room" v-on:keyup.enter="joinroom" class="lobbyinput">
                             <button @click="joinroom"><i class="fas fa-arrow-right"></i></button>
-                        </div>
+						</div>
+						<br>
+						<br>
+						<div>
+							BiggerBlacker.com is an online version of the Cards Against Humanity card game, which is available at <a href='http://cardsagainsthumanity.com' target="_blank">cardsagainsthumanity.com</a>. 
+							The cards are distributed under a <a href="https://creativecommons.org/licenses/by-nc-sa/2.0/" target="_blank">Commons BY-NC-SA 2.0 license</a>. 
+							This website is in no way endorsed or sponsored by cardsagainsthumanity.com.
+						</div>
             			<!-- the v-on:keyup.enter listens for the Enter keypress and calls the same function as clicking the button -->
             			<div class="version">
-            				<p>Branch: {{version.branch}} - Commit: {{version.hash}} - Date: {{version.date}}</p>
-            				<!-- These values were injected into the Docker build, exposed to the container as environment variables,... -->
+            				<span>Branch: {{version.branch}} - Commit: {{version.hash}} - Date: {{version.date}}</span>
+							<!-- These values were injected into the Docker build, exposed to the container as environment variables,... -->
+							<span id="eggplant">🍆</span>    
             			</div>
             			<!-- ...passed to Node as command line arguments, served to the client via an endpoint that Vue sends an AJAX to and updates the client-side variable -->
         			</div>
