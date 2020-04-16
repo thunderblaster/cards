@@ -59,6 +59,7 @@ io.on('connection', function (socket) { // The socket.io connection is first cal
                 rooms[msg.room].userlist.push({ id: socket.id, name: msg.name, selected: false, turn: false, points: 0, hand: []}); // Add this user to the playerlist of the newly created room
                 rooms[msg.room].whitecards.push({ card_id: randomInt(10000, 99999), card_text: msg.name }); // add this user's name as a white card, for funsies
             } else { // existing room
+                sleep(1000); //wait for a couple seconds before checking for a disconnected user
                 if (rooms[msg.room].dclist.length > 0) { // users have disconnected, check if this user is a returning one
                     for (let i = rooms[msg.room].dclist.length - 1; i >= 0; i--) { // Count backwards to ensure we're getting their most recent score in case they've disconnected many times
                         if (msg.name === rooms[msg.room].dclist[i].name) { // match as disconnected user, give them their old score back
@@ -349,3 +350,9 @@ function shuffle(array) { // Used to shuffle selected cards when presented back 
 
     return array;
 }
+
+function sleep(ms) {
+    return new Promise((resolve) => {
+      setTimeout(resolve, ms);
+    });
+  }   
