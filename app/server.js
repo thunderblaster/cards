@@ -68,8 +68,7 @@ io.on('connection', function (socket) { // The socket.io connection is first cal
                             break;
                         }
                     }
-                }
-                if (!socket.name) { // user was not matched to a disconnected one, treat as new user
+                } else if (!socket.name) { // user was not matched to a disconnected one, treat as new user
                     socket.name = msg.name;
                     socket.room = msg.room;
                     rooms[msg.room].userlist.push({ id: socket.id, name: msg.name, selected: false, turn: false, points: 0, hand: []});
