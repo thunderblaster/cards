@@ -115,7 +115,7 @@ var app = new Vue({
             })
             // Okay, listeners set up
             socket.emit('joinroom', {room: this.room, name: this.name}); // let's tell the server we're joining the room
-            window.setTimeout(()=>{socket.emit('drawfivecards', this.name);}, 2000); // ask for cards, but give the server a moment to ensure the room gets created and we get joined to it
+            window.setTimeout(()=>{socket.emit('drawfivecards', this.name);}, 1000); // ask for cards, but give the server a moment to ensure the room gets created and we get joined to it
             this.roomjoined = true; // update the client that we've joined a room to update the view
         },
     },
