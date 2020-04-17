@@ -53,10 +53,10 @@ io.on('connection', function (socket) { // The socket.io connection is first cal
                 // We aren't going to do anything with this.
             });
             if (!rooms[msg.room]) { // The requested room doesn't exist in our global variable, so it's a new room and we need to create it
-                createRoom(msg.room); // Call the createRoom function
+                createRoom(msg.room); // Call the createRoom functionA
                 socket.name = msg.name; // Assign the player's name to their socket so we can get it later without having to send it from the client each time. 
                 socket.room = msg.room; // Assign their room as well
-                rooms[msg.room].userlist.push({ id: socket.id, name: msg.name, selected: false, turn: false, points: 0 }); // Add this user to the playerlist of the newly created room
+                rooms[msg.room].userlist.push({ id: socket.id, name: msg.name, selected: false, turn: false, points: 0, hand: []}); // Add this user to the playerlist of the newly created room
                 rooms[msg.room].whitecards.push({ card_id: randomInt(10000, 99999), card_text: msg.name }); // add this user's name as a white card, for funsies
             } else { // existing room
                 if (rooms[msg.room].dclist.length > 0) { // users have disconnected, check if this user is a returning one
@@ -64,15 +64,15 @@ io.on('connection', function (socket) { // The socket.io connection is first cal
                         if (msg.name === rooms[msg.room].dclist[i].name) { // match as disconnected user, give them their old score back
                             socket.name = msg.name;
                             socket.room = msg.room;
-                            rooms[msg.room].userlist.push({ id: socket.id, name: msg.name, selected: false, turn: false, points: rooms[msg.room].dclist[i].points });
-                            break;
+                            rooms[msg.room].userlist.push({ id: socket.id, name: msg.name, selected: false, turn: false, points: rooms[msg.room].dclist[i].points,  hand: rooms[msg.room].dclist[i].hand});
+				break;
                         }
                     }
-                }
-                if (!socket.name) { // user was not matched to a disconnected one, treat as new user
+                } else if (!socket.name) { // user was not matched to a disconnected one, treat as new user
+			console.log("new user: " + msg.name);
                     socket.name = msg.name;
                     socket.room = msg.room;
-                    rooms[msg.room].userlist.push({ id: socket.id, name: msg.name, selected: false, turn: false, points: 0 });
+                    rooms[msg.room].userlist.push({ id: socket.id, name: msg.name, selected: false, turn: false, points: 0, hand: []});
                     rooms[msg.room].whitecards.push({ card_id: randomInt(10000, 99999), card_text: msg.name }); // add this user's name as a white card, for funsies
                 }
             }
@@ -124,7 +124,13 @@ io.on('connection', function (socket) { // The socket.io connection is first cal
             let selectedcards = []; // Here's a handy (but somewhat redundant) array to hold all the cards selected for play with this black card
             for (let i = 0; i < rooms[socket.room].userlist.length; i++) { // Loop through all users in room
                 if (rooms[socket.room].userlist[i].selected) { // If they've selected a card (remember, one is the czar and will not have)
-                    selectedcards.push({ name: rooms[socket.room].userlist[i].name, card_text: rooms[socket.room].userlist[i].selected, selected: false }); // Push to array
+                    
+                    for(let j = 0; j < rooms[socket.room].userlist[i].hand.length; j++){
+                        if (rooms[socket.room].userlist[i].hand[j].card_text == rooms[socket.room].userlist[i].selected){
+                            //rooms[socket.room].userlist[i].hand.splice(j, 1); //Remove selected card
+                            selectedcards.push({ name: rooms[socket.room].userlist[i].name, card_text: rooms[socket.room].userlist[i].selected, selected: false, card_id :  rooms[socket.room].userlist[i].hand[j].card_id}); // Push to array
+                        }
+                    }
                 }
             }
             shuffle(selectedcards); // This is important, otherwise the white cards will be displayed in the order of the players in the userlist array which means they wouldn't be anonymous
@@ -137,7 +143,7 @@ io.on('connection', function (socket) { // The socket.io connection is first cal
     ///////////// There should just be a 'drawcards' function that takes the quantity and color as arguments ////////////
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    socket.on('drawonecard', function () { // This is called when the user has played a single card and needs to replenish it
+    socket.on('drawonecard', function (name) { // This is called when the user has played a single card and needs to replenish it
         if (!socket.room) {
             io.to(socket.id).emit('whoareyou'); // This essentially tells the client they have a stale session and need to reload
             return;
@@ -145,22 +151,46 @@ io.on('connection', function (socket) { // The socket.io connection is first cal
         let cardsToReturn = []; // I know, why is this an array? this is just garbage code
         let index = getRandomIndex(rooms[socket.room].whitecards); // Pick a random index to select the card to draw (there's too many random functions, also. Those should be consolidated)
         let cardDrawn = rooms[socket.room].whitecards.splice(index, 1); // Remove the selected card from the white cards array
+
+        for (let i = 0; i < rooms[socket.room].userlist.length; i++) { // Loop through the users in room
+            if (rooms[socket.room].userlist[i].name == name) { 
+                rooms[socket.room].userlist[i].hand.push(cardDrawn[0]); //Add drawn card to the user's hand on serverside
+            }
+        }
+
         cardsToReturn.push(cardDrawn[0]); // Ugh, indefensible
         io.to(socket.id).emit('dealcards', cardsToReturn); // Send cards to the player who requested it
     });
-    socket.on('drawfivecards', function () { // This is identical except there's an array. And it used to deal 5 cards but I changed that
+    socket.on('drawfivecards', function (name) { // This is identical except there's an array. And it used to deal 5 cards but I changed that
         if (!socket.room) {                      // without changing the name of the function. Judge away. I deserve it.
             io.to(socket.id).emit('whoareyou'); // This essentially tells the client they have a stale session and need to reload
             return;
         }
 
-        let cardsToReturn = [];
-        for (let i = 0; i < 7; i++) {
-            let index = getRandomIndex(rooms[socket.room].whitecards);
-            let cardDrawn = rooms[socket.room].whitecards.splice(index, 1);
-            cardsToReturn.push(cardDrawn[0]);
-        }
-        io.to(socket.id).emit('dealcards', cardsToReturn);
+        for (let i = 0; i < rooms[socket.room].userlist.length; i++) { // Loop through the users in room
+            if (rooms[socket.room].userlist[i].name == name) { // if it's your turn, you will not have selected a card
+
+                if (rooms[socket.room].userlist[i].hand == undefined || rooms[socket.room].userlist[i].hand.length == 0){
+                    let cardsToReturn = [];
+                    for (let j = 0; j < 7; j++) {
+                        let index = getRandomIndex(rooms[socket.room].whitecards);
+                        let cardDrawn = rooms[socket.room].whitecards.splice(index, 1);
+                        
+                        if(rooms[socket.room].userlist[i].hand == undefined || rooms[socket.room].userlist[i].hand.length < 7){
+                            rooms[socket.room].userlist[i].hand.push(cardDrawn[0]); //Add drawn card to the user's hand on serverside
+                            cardsToReturn.push(cardDrawn[0]);
+                        }
+
+                    }
+                    io.to(socket.id).emit('dealcards', cardsToReturn);
+			break;
+                } else {
+                    io.to(socket.id).emit('dealcards', rooms[socket.room].userlist[i].hand);
+			break;
+                }
+                
+            }
+        }        
 
     });
     socket.on('drawblack', function () { // Pretty much the same, but different array
@@ -191,6 +221,18 @@ io.on('connection', function (socket) { // The socket.io connection is first cal
                 rooms[socket.room].userlist[i].points++; // ... and increment their points
                 // A better approach would likely be to tie the username to the selected card when it's announced to the room.
                 io.to(socket.room).emit('winningcard', msg); // Announce the winning card to the room
+                
+                for(let j = 0; j < rooms[socket.room].userlist[i].hand.length; j++){
+                    if(rooms[socket.room].userlist[i].hand[j].card_text == msg.card_text) // Search for the winning card from their hand
+                    {
+                        console.log("Winning card selected, room: " + socket.room + " name: "+ rooms[socket.room].userlist[i].name + " black_card: " + rooms[socket.room].currentBlack[0].card_id + " white_card: " + msg.card_id);
+                        pool.query('INSERT INTO log_card (name, room, black_card, winning_white_card) VALUES (?, ?, ?, ?)', [rooms[socket.room].userlist[i].name, socket.room, rooms[socket.room].currentBlack[0].card_id, msg.card_id], function (error, results, fields) { // Save what card won to the database
+                            if(error !== null){
+                                console.log(error);
+                            }
+                        });
+                    }
+                }                
             }
             rooms[socket.room].userlist[i].selected = false; // Mark all players as no longer having a selected card
         }
