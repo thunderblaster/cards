@@ -21,52 +21,43 @@
 </head>
 <body>
 	<div id="app">
+		<div class="header">
+			<h1 id="title">Bigger. Blacker.</h1>
+			<span id="beerlink"><a href="https://paypal.me/pools/c/8oldMsnktL" target="_blank">Buy us a beer!</a></span>
+		</div>
 		<div v-if="!roomjoined">
 			<!-- this is the join a room view -->
-			<div class="container">
-    			<div class="row">
-        			<div class="col-12">
-            			<p id="eggplant">🍆</p>
-            			<h1 id="title">Bigger. Blacker.</h1>
+			
+			<div class="container">				
+    			<div class="row">					
+        			<div class="col-12">            			        			
             			<div>
                 			What's your name? <input v-model="name" class="lobbyinput"><br />
                             Enter a room name to join: <input v-model="room" v-on:keyup.enter="joinroom" class="lobbyinput">
                             <button @click="joinroom"><i class="fas fa-arrow-right"></i></button>
-                        </div>
+						</div>
+						<br>
+						<br>
+						<div>
+							BiggerBlacker.com is an online version of the Cards Against Humanity card game, which is available at <a href='http://cardsagainsthumanity.com' target="_blank">cardsagainsthumanity.com</a>. 
+							The cards are distributed under a <a href="https://creativecommons.org/licenses/by-nc-sa/2.0/" target="_blank">Commons BY-NC-SA 2.0 license</a>. 
+							This website is in no way endorsed or sponsored by cardsagainsthumanity.com.
+						</div>
             			<!-- the v-on:keyup.enter listens for the Enter keypress and calls the same function as clicking the button -->
-            			<div class="version">
-            				<p>Branch: {{version.branch}} - Commit: {{version.hash}} - Date: {{version.date}}</p>
-            				<!-- These values were injected into the Docker build, exposed to the container as environment variables,... -->
-            			</div>
-            			<!-- ...passed to Node as command line arguments, served to the client via an endpoint that Vue sends an AJAX to and updates the client-side variable -->
+            			<span id="eggplant">🍆</span>  
         			</div>
-    			</div>
+				</div>
+				<div class="version">
+					<!-- ...passed to Node as command line arguments, served to the client via an endpoint that Vue sends an AJAX to and updates the client-side variable -->
+					<span>Branch: {{version.branch}} - Commit: {{version.hash}} - Date: {{version.date}}</span>
+				</div>
 			</div>
 		</div>
 		<div v-if="roomjoined">
-			<!-- this is the playing cards view -->
-			<div class="game-header">
-    			<div id="chatlink" v-if="chatlink.visible">
-    				<!-- Only show this if the chatlink variable is true. Otherwise, show the icon to show this -->
-    				<div>Link To This Room's Chat:</div>
-    				<div id="chatlinkgroup" v-if="chatlink.current">
-        				<a v-bind:href="chatlink.current" target="_blank">{{chatlink.current}}</a>
-        				<button @click="editchatlink"><i class="fas fa-pencil-alt"></i></button>
-                    </div>
-    				<!-- If there is currently a link, display it as an anchor with a button to edit it -->
-    				<div id="chatlinkinputgroup" v-if="!chatlink.current">
-        				<input v-model="chatlink.temp" v-on:keyup.enter="submitchatlink" placeholder="https://hangouts.google.com/xxxxxxxx" class="chatlinkinput">
-                        <button @click="submitchatlink"><i class="fas fa-check"></i></button>
-                        <button @click="cancelchatlink"><i class="fas fa-times"></i></button>
-                    </div>
-    				<!-- If there is not currently a link, display an input to enter one -->
-    				<i class="fas fa-chevron-up fa-2x hide-chat" @click="chatlink.visible=false"></i>
-    				<!-- Icon to hide the chatlink menu -->
-    			</div>
-    			<div id="chatlinkdropdown" v-if="!chatlink.visible">
-    				<!-- If chatlink is currently hidden -->
-    				<i class="fas fa-headset fa-2x hide-chat" @click="chatlink.visible=true"></i> <!-- Unhide on click -->
-    			</div>
+			<!-- this is the playing cards view -->			
+			<div class="game-header">				
+    			
+				<button @click="startgame" v-if="!gamestarted" id="startbutton">Start Game!</button>
     			<div id="playerlist">
     				<!-- The playerlist in the top right -->
     				<ul>
@@ -79,6 +70,28 @@
     				</ul>
     			</div>
 			</div>
+			<div id="chatlink" v-if="chatlink.visible">
+				<!-- Only show this if the chatlink variable is true. Otherwise, show the icon to show this -->
+				<div>Link To This Room's Chat:</div>
+				<div id="chatlinkgroup" v-if="chatlink.current">
+					<a v-bind:href="chatlink.current" target="_blank">{{chatlink.current}}</a>
+					<button @click="editchatlink"><i class="fas fa-pencil-alt"></i></button>
+				</div>
+				<!-- If there is currently a link, display it as an anchor with a button to edit it -->
+				<div id="chatlinkinputgroup" v-if="!chatlink.current">
+					<input v-model="chatlink.temp" v-on:keyup.enter="submitchatlink" placeholder="https://hangouts.google.com/xxxxxxxx" class="chatlinkinput">
+					<button @click="submitchatlink"><i class="fas fa-check"></i></button>
+					<button @click="cancelchatlink"><i class="fas fa-times"></i></button>
+				</div>
+				<!-- If there is not currently a link, display an input to enter one -->
+				<i class="fas fa-chevron-up fa-2x hide-chat" @click="chatlink.visible=false"></i>
+				<!-- Icon to hide the chatlink menu -->
+			</div>
+			<div id="chatlinkdropdown" v-if="!chatlink.visible">
+				<!-- If chatlink is currently hidden -->
+				<i class="fas fa-headset fa-2x hide-chat" @click="chatlink.visible=true"></i> <!-- Unhide on click -->
+			</div>
+			
 			<div class="game-content">
     			<div id="mycards">
     				<!-- This is the main div where the white cards are held, either those in your hand or those submitted to the Card Czar -->
@@ -110,7 +123,7 @@
     				<!-- This shows the black card. -->
     				<p v-html="blackcard[0].card_text"></p>
     			</div>
-    			<button @click="startgame" v-if="!gamestarted" id="startbutton">Start Game!</button>
+    			
 			</div>
 			<!-- If the game hasn't yet started, show a button to start it -->
 		</div>

@@ -12,12 +12,30 @@ button, input {
   margin-top: 0.3em;
 }
 
+.header {
+  background-color: black;
+  color: white;
+  padding: 1em;
+}
+
+#beerlink {
+  padding-top: 1em;
+  float:right;
+}
+
+.footer {
+  background-color: black;
+  color: white;
+  padding: 1em;
+}
+
 .lobbyinput {
   width: 10em;
 }
 
 .hide-chat {
-  margin-left: 8em;
+  padding-top: 1px;
+  float: middle;
   cursor: pointer;
 }
 
@@ -40,13 +58,18 @@ button, input {
 }
 
 #chatlink {
-  margin: 1em;
-  position: absolute;
-  z-index: 10;
   background: white;
   padding: 0.5em;
   border-radius: 10px;
-  left: 9em;
+  float: right;
+  margin-left: 0.3em;
+  margin-top: 0.3em;
+}
+
+#chatlinkdropdown {
+  float: right;
+  margin-left: 0.3em;
+  margin-top: 0.3em;
 }
 
 .card {
@@ -88,9 +111,7 @@ button, input {
 }
 
 #playerlist {
-  position: fixed;
-  top: 0;
-  right: 0;
+  float: right;
   width: 12em;
   border: 3px solid white;
   background-color: black;
@@ -114,7 +135,7 @@ button, input {
   left: 1em;
 }
 
-#eggplant, #title {
+#title {
   display: inline;
 }
 
@@ -126,9 +147,9 @@ button, input {
   font-size: 300%;
   animation-name: growAndBlacken;
   animation-duration: 5s;
-  animation-delay: 2s;
+  animation-delay: 10s;
   animation-fill-mode: forwards;
-  float: right;
+  float: left;
 }
 
 @keyframes growAndBlacken {
@@ -136,16 +157,15 @@ button, input {
     font-size: 300%;
   }
   to {
-    font-size: 800%;
+    font-size: 700%;
     filter: contrast(0) sepia(1) saturate(0) brightness(0.05);
   }
 }
 .version {
   position: fixed;
-  left: 0;
-  right: 0;
+  left: 2em;
+  right: 2em;
   bottom: 0;
-  height: 4em;
 }
 
 @media (max-width: 900px) and (orientation: landscape) {
@@ -164,10 +184,19 @@ button, input {
   #mycards {
     bottom: -0.5em;
   }
+
+  .header {
+    display: none;
+  }
+
+  .hide-chat{
+    position: absolute;
+    right: 200px;
+  }
 }
 @media (max-width: 700px) and (orientation: portrait) {
   #mycards {
-    top: 1.5em;
+    top: 3.5em;
     bottom: 0;
     left: -1em;
     width: 50vw;
@@ -208,18 +237,23 @@ button, input {
   }
 
   #startbutton {
-    position: fixed;
+    float: left;
     right: 1em;
     bottom: 1em;
   }
 
   .hide-chat {
-    position: fixed;
     left: 45%;
     margin-left: 0;
+    position: absolute;
+    right: 200px;
   }
 
   .chatlinkinput {
     width: 70%;
+  }
+
+  .header {
+    display: none;
   }
 }
