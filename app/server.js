@@ -53,7 +53,8 @@ io.on('connection', function (socket) { // The socket.io connection is first cal
                 // We aren't going to do anything with this.
             });
             if (!rooms[msg.room]) { // The requested room doesn't exist in our global variable, so it's a new room and we need to create it
-                createRoom(msg.room); // Call the createRoom function
+                createRoom(msg.room); // Call the createRoom functionA
+		    console.log("new user " + msg.name + " creating room " + msg.room);
                 socket.name = msg.name; // Assign the player's name to their socket so we can get it later without having to send it from the client each time. 
                 socket.room = msg.room; // Assign their room as well
                 rooms[msg.room].userlist.push({ id: socket.id, name: msg.name, selected: false, turn: false, points: 0, hand: []}); // Add this user to the playerlist of the newly created room
@@ -62,13 +63,16 @@ io.on('connection', function (socket) { // The socket.io connection is first cal
                 if (rooms[msg.room].dclist.length > 0) { // users have disconnected, check if this user is a returning one
                     for (let i = rooms[msg.room].dclist.length - 1; i >= 0; i--) { // Count backwards to ensure we're getting their most recent score in case they've disconnected many times
                         if (msg.name === rooms[msg.room].dclist[i].name) { // match as disconnected user, give them their old score back
+				console.log("match disconnected user: " + msg.name);
                             socket.name = msg.name;
                             socket.room = msg.room;
                             rooms[msg.room].userlist.push({ id: socket.id, name: msg.name, selected: false, turn: false, points: rooms[msg.room].dclist[i].points,  hand: rooms[msg.room].dclist[i].hand});
-                            break;
+                            console.log("returning cards to their hand: ", rooms[msg.room].dclist[i].hand);
+				break;
                         }
                     }
                 } else if (!socket.name) { // user was not matched to a disconnected one, treat as new user
+			console.log("new user: " + msg.name);
                     socket.name = msg.name;
                     socket.room = msg.room;
                     rooms[msg.room].userlist.push({ id: socket.id, name: msg.name, selected: false, turn: false, points: 0, hand: []});
@@ -181,8 +185,10 @@ io.on('connection', function (socket) { // The socket.io connection is first cal
                         }
 
                     }
+			console.log('dealing fresh cards to ' + name);
                     io.to(socket.id).emit('dealcards', cardsToReturn);
                 } else {
+			console.log('returning old hand to ' + name);
                     io.to(socket.id).emit('dealcards', rooms[socket.room].userlist[i].hand);
                 }
                 
