@@ -24,12 +24,15 @@ EXPOSE 3001
 
 ARG git_hash
 ENV env_hash=$git_hash
+LABEL git_hash=${git_hash}
 
 ARG git_date
 ENV env_date=$git_date
+LABEL git_date=${git_date}
 
 ARG git_branch
 ENV env_branch=$git_branch
+LABEL git_branch=${git_branch}
 
 RUN compass compile /usr/src/cards/app;
 
