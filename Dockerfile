@@ -19,11 +19,14 @@ EXPOSE 3001
 
 ARG git_hash
 ENV env_hash=$git_hash
+LABEL git_hash=${git_hash}
 
 ARG git_date
 ENV env_date=$git_date
+LABEL git_date=${git_date}
 
 ARG git_branch
 ENV env_branch=$git_branch
+LABEL git_branch=${git_branch}
 
 CMD [ "sh", "-c", "node app/server.js ${env_hash} ${env_date} ${env_branch} 2>&1 | tee -a /log/app.log" ]
