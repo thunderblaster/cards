@@ -61,13 +61,13 @@ button, input {
   background: white;
   padding: 0.5em;
   border-radius: 10px;
-  float: left;
+  float: right;
   margin-left: 0.3em;
   margin-top: 0.3em;
 }
 
 #chatlinkdropdown {
-  float: left;
+  float: right;
   margin-left: 0.3em;
   margin-top: 0.3em;
 }
@@ -149,7 +149,7 @@ button, input {
   animation-duration: 5s;
   animation-delay: 10s;
   animation-fill-mode: forwards;
-  float: right;
+  float: left;
 }
 
 @keyframes growAndBlacken {
@@ -188,10 +188,15 @@ button, input {
   .header {
     display: none;
   }
+
+  .hide-chat{
+    position: absolute;
+    right: 200px;
+  }
 }
 @media (max-width: 700px) and (orientation: portrait) {
   #mycards {
-    top: 1.5em;
+    top: 3.5em;
     bottom: 0;
     left: -1em;
     width: 50vw;
@@ -240,6 +245,8 @@ button, input {
   .hide-chat {
     left: 45%;
     margin-left: 0;
+    position: absolute;
+    right: 200px;
   }
 
   .chatlinkinput {
