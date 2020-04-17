@@ -15,6 +15,18 @@ button, input {
 .header {
   background-color: black;
   color: white;
+  padding: 1em;
+}
+
+#beerlink {
+  padding-top: 1em;
+  float:right;
+}
+
+.footer {
+  background-color: black;
+  color: white;
+  padding: 1em;
 }
 
 .lobbyinput {
@@ -22,7 +34,8 @@ button, input {
 }
 
 .hide-chat {
-  margin-left: 8em;
+  padding-top: 1px;
+  float: middle;
   cursor: pointer;
 }
 
@@ -45,13 +58,18 @@ button, input {
 }
 
 #chatlink {
-  margin: 1em;
-  position: absolute;
-  z-index: 10;
   background: white;
   padding: 0.5em;
   border-radius: 10px;
-  left: 9em;
+  float: left;
+  margin-left: 0.3em;
+  margin-top: 0.3em;
+}
+
+#chatlinkdropdown {
+  float: left;
+  margin-left: 0.3em;
+  margin-top: 0.3em;
 }
 
 .card {
@@ -93,9 +111,7 @@ button, input {
 }
 
 #playerlist {
-  position: fixed;
-  top: 0;
-  right: 0;
+  float: right;
   width: 12em;
   border: 3px solid white;
   background-color: black;
@@ -150,7 +166,6 @@ button, input {
   left: 2em;
   right: 2em;
   bottom: 0;
-  height: 10em;
 }
 
 @media (max-width: 900px) and (orientation: landscape) {
@@ -168,6 +183,10 @@ button, input {
 
   #mycards {
     bottom: -0.5em;
+  }
+
+  .header {
+    display: none;
   }
 }
 @media (max-width: 700px) and (orientation: portrait) {
@@ -213,18 +232,21 @@ button, input {
   }
 
   #startbutton {
-    position: fixed;
+    float: left;
     right: 1em;
     bottom: 1em;
   }
 
   .hide-chat {
-    position: fixed;
     left: 45%;
     margin-left: 0;
   }
 
   .chatlinkinput {
     width: 70%;
+  }
+
+  .header {
+    display: none;
   }
 }
