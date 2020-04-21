@@ -40,7 +40,7 @@ const logger = winston.createLogger({
         }),
         new winston.transports.File({ 
             handleExceptions: true,
-            level: 'verbose',
+            level: 'debug',
             filename: __dirname + '/log/app.log'
         }),
       new winston_mysql(options_default)
@@ -89,20 +89,25 @@ io.on('connection', function (socket) { // The socket.io connection is first cal
                 createRoom(msg.room); // Call the createRoom function
                 socket.name = msg.name; // Assign the player's name to their socket so we can get it later without having to send it from the client each time. 
                 socket.room = msg.room; // Assign their room as well
+                logger.debug("Adding user to room with empty hand", {roomname: msg.room, username: msg.name});
                 rooms[msg.room].userlist.push({ id: socket.id, name: msg.name, selected: false, turn: false, points: 0, hand: []}); // Add this user to the playerlist of the newly created room
+                logger.debug("Adding usernames as white cards to the room", {roomname: msg.room, username: msg.name});
                 rooms[msg.room].whitecards.push({ card_id: util.randomInt(10000, 99999), card_text: msg.name }); // add this user's name as a white card, for funsies
             } else { // existing room
                 if (rooms[msg.room].dclist.length > 0) { // users have disconnected, check if this user is a returning one
+                    logger.debug("DC list current has %d users", rooms[msg.room].dclist.length, {roomname: msg.room, username: msg.name});
                     for (let i = rooms[msg.room].dclist.length - 1; i >= 0; i--) { // Count backwards to ensure we're getting their most recent score in case they've disconnected many times
                         if (msg.name === rooms[msg.room].dclist[i].name) { // match as disconnected user, give them their old score back
                             socket.name = msg.name;
                             socket.room = msg.room;
                             rooms[msg.room].userlist.push({ id: socket.id, name: msg.name, selected: false, turn: false, points: rooms[msg.room].dclist[i].points,  hand: rooms[msg.room].dclist[i].hand});
-                            logger.verbose("Found user in dc list", {roomname: msg.room, username: msg.name});
+                            logger.verbose("Found user in dc list, added them to the room", {roomname: msg.room, username: msg.name});
                             break;
                         }
                     }
-                } else if (!socket.name) { // user was not matched to a disconnected one, treat as new user
+                }
+                
+                if (!socket.name) { // user was not matched to a disconnected one, treat as new user
 			        logger.info("New user", {roomname: msg.room, username: msg.name});
                     socket.name = msg.name;
                     socket.room = msg.room;
@@ -117,6 +122,8 @@ io.on('connection', function (socket) { // The socket.io connection is first cal
                 io.to(socket.id).emit('gamestarted'); // ...let the new user know
                 io.to(socket.id).emit('dealblack', rooms[socket.room].currentBlack); // ...and show them the current black card
             }
+        } else {
+            logger.warn("User attempted to join a room but didn't specify which");
         }
 
     });
@@ -132,6 +139,7 @@ io.on('connection', function (socket) { // The socket.io connection is first cal
             io.to(socket.id).emit('whoareyou'); // This essentially tells the client they have a stale session and need to reload
             return;
         }
+        logger.info("User clicked Start Game", {roomname: socket.room});
         io.to(socket.room).emit('gamestarted'); // Announce it to the room
         rooms[socket.room].gamestarted = true; // Note that it's started on our server variable
         rooms[socket.room].userlist[0].turn = true; // First player in the array will go first
@@ -140,9 +148,13 @@ io.on('connection', function (socket) { // The socket.io connection is first cal
     });
     socket.on('selected', function (msg) { // Player selects a card to submit to Card Czar
         if (!socket.room) {
+            logger.warn("Stale session detected, sending whoareyou");
             io.to(socket.id).emit('whoareyou'); // This essentially tells the client they have a stale session and need to reload
             return;
         }
+
+        logger.verbose("Card has been selected", {roomname: socket.room, cardtext: msg});
+
         let userIndex = rooms[socket.room].userlist.findIndex(element => element.id === socket.id); // Grab their index in the user array
         rooms[socket.room].userlist[userIndex].selected = msg; // Note their selected card in their user in the rooms object
 
@@ -155,14 +167,16 @@ io.on('connection', function (socket) { // The socket.io connection is first cal
             }
         }
         if (ready === rooms[socket.room].userlist.length) { // everyone is ready
+            logger.verbose("Everyone is ready", {roomname: socket.room});
             let selectedcards = []; // Here's a handy (but somewhat redundant) array to hold all the cards selected for play with this black card
             for (let i = 0; i < rooms[socket.room].userlist.length; i++) { // Loop through all users in room
                 if (rooms[socket.room].userlist[i].selected) { // If they've selected a card (remember, one is the czar and will not have)
                     
                     for(let j = 0; j < rooms[socket.room].userlist[i].hand.length; j++){
                         if (rooms[socket.room].userlist[i].hand[j].card_text == rooms[socket.room].userlist[i].selected){
-                            //rooms[socket.room].userlist[i].hand.splice(j, 1); //Remove selected card
+                            logger.debug("Found the selected card in a user's hand, adding to selected cards", {roomname: socket.room, username: rooms[socket.room].userlist[i].name});
                             selectedcards.push({ name: rooms[socket.room].userlist[i].name, card_text: rooms[socket.room].userlist[i].selected, selected: false, card_id :  rooms[socket.room].userlist[i].hand[j].card_id}); // Push to array
+                            break;
                         }
                     }
                 }
@@ -188,6 +202,7 @@ io.on('connection', function (socket) { // The socket.io connection is first cal
 
         for (let i = 0; i < rooms[socket.room].userlist.length; i++) { // Loop through the users in room
             if (rooms[socket.room].userlist[i].name == name) { 
+                logger.debug("Adding one card to user's hand", {roomname: socket.room, username: rooms[socket.room].userlist[i].name, cardid: cardDrawn[0].card_id});
                 rooms[socket.room].userlist[i].hand.push(cardDrawn[0]); //Add drawn card to the user's hand on serverside
             }
         }
@@ -211,16 +226,19 @@ io.on('connection', function (socket) { // The socket.io connection is first cal
                         let cardDrawn = rooms[socket.room].whitecards.splice(index, 1);
                         
                         if(rooms[socket.room].userlist[i].hand == undefined || rooms[socket.room].userlist[i].hand.length < 7){
+                            logger.debug("Adding one (of seven) cards to user's hand", {roomname: socket.room, username: rooms[socket.room].userlist[i].name, cardid: cardDrawn[0].card_id});
                             rooms[socket.room].userlist[i].hand.push(cardDrawn[0]); //Add drawn card to the user's hand on serverside
                             cardsToReturn.push(cardDrawn[0]);
                         }
 
                     }
+                    logger.debug("Dealing cards back to user", {roomname: socket.room, username: rooms[socket.room].userlist[i].name});
                     io.to(socket.id).emit('dealcards', cardsToReturn);
-			break;
+			        break;
                 } else {
+                    logger.debug("User already has a hand, giving it back to them", {roomname: socket.room, username: rooms[socket.room].userlist[i].name});
                     io.to(socket.id).emit('dealcards', rooms[socket.room].userlist[i].hand);
-			break;
+			        break;
                 }
                 
             }
@@ -236,6 +254,7 @@ io.on('connection', function (socket) { // The socket.io connection is first cal
         let index = util.getRandomIndex(rooms[socket.room].blackcards);
         let cardDrawn = rooms[socket.room].blackcards.splice(index, 1);
         rooms[socket.room].currentBlack = cardDrawn;
+        logger.debug("Dealing a black card", {roomname: socket.room});
         cardsToReturn.push(cardDrawn[0]);
         io.to(socket.room).emit('dealblack', cardsToReturn); // Note we announce this to the whole room and not just the user who requested it
     });
@@ -261,8 +280,18 @@ io.on('connection', function (socket) { // The socket.io connection is first cal
                     {
                         logger.info("Winning card selected black card_id %s white card_id %s ", rooms[socket.room].currentBlack[0].card_id , msg.card_id, {roomname: socket.room, username: rooms[socket.room].userlist[i].name});
                     }
+
+
                 }                
             }
+
+            for(let j = 0; j < rooms[socket.room].userlist[i].hand.length; j++){
+                if(rooms[socket.room].userlist[i].selected == rooms[socket.room].userlist[i].hand[j].card_text){
+                    logger.verbose("Removing white card from user's hand", {roomname: socket.room, username: rooms[socket.room].userlist[i].name, cardid: rooms[socket.room].userlist[i].hand[j].card_id});
+                    rooms[socket.room].userlist[i].hand.splice(j, 1);
+                }
+            }            
+
             rooms[socket.room].userlist[i].selected = false; // Mark all players as no longer having a selected card
         }
 
@@ -284,8 +313,8 @@ io.on('connection', function (socket) { // The socket.io connection is first cal
 
     });
     socket.on('disconnect', () => { //check if room is empty and if so, delete
-        logger.debug("Disconnect triggered");
         if (socket.room) {
+            logger.debug("Disconnect triggered");
             for (let i = 0; i < rooms[socket.room].userlist.length; i++) {
                 if (rooms[socket.room].userlist[i].name == socket.name) { //find the user who d/c'ed
                     logger.verbose("Found a disconnected user", {roomname: rooms[socket.room].name, username: rooms[socket.room].userlist[i].name});
@@ -318,6 +347,7 @@ io.on('connection', function (socket) { // The socket.io connection is first cal
                 }
             }
             if (ready === rooms[socket.room].userlist.length) { // everyone is ready
+                logger.info("Everyone is ready", {roomname: socket.room});
                 let selectedcards = [];
                 for (let i = 0; i < rooms[socket.room].userlist.length; i++) {
                     if (rooms[socket.room].userlist[i].selected) {
