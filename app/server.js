@@ -4,7 +4,17 @@ var http = require('http').createServer(app); // Socket.io requires the Express 
 var io = require('socket.io')(http); // Load and initialize Socket.io to our webserver
 var mysql = require('mysql'); // Load MySQL
 const config = require('./config'); // Get our config file
+const util = require('./utilities');
+const winston = require('winston');
+const winston_mysql = require('winston-mysql');
 
+var options_default = {
+    host     : config.database.host,
+    user     : config.database.user,
+    password : config.database.password,
+    database : config.database.database,
+    table    : 'log_system'
+  };
 
 var pool = mysql.createPool({ // Initialize the MySQL connection pool. Defaulting to 25 connections here, may need to increase later.
     connectionLimit: 25,
@@ -15,8 +25,30 @@ var pool = mysql.createPool({ // Initialize the MySQL connection pool. Defaultin
     port: config.database.port
 });
 
+const logger = winston.createLogger({
+    level: 'info',
+    format: winston.format.combine(
+        winston.format.splat(),
+        winston.format.json()       
+        ),
+    exitOnError: false,
+    transports: [
+        new winston.transports.Console({
+            handleExceptions: true,
+            level: 'debug',
+            format: winston.format.simple()
+        }),
+        new winston.transports.File({ 
+            handleExceptions: true,
+            level: 'verbose',
+            filename: __dirname + '/log/app.log'
+        }),
+      new winston_mysql(options_default)
+    ]
+  });
+
 pool.on('error', function (err) { // Log MySQL errors to STDOUT
-    console.log(err);
+    logger.error(err);
 });
 
 app.get('/', function (req, res) { // Serve index.html from the public folder when a user requests the webroot
@@ -33,7 +65,7 @@ app.get('/version', function (req, res) { // Serve the git information provided 
 });
 
 app.get('/log', function (req, res) { // Send the text file located in the Docker Volume on the container filesystem at /log/app.log
-    res.sendFile('/log/app.log');
+    res.sendFile(__dirname + '/log/app.log');
 });
 
 app.use(express.static(__dirname + '/public')); // If someone requests another path, just serve them whatever matches in the public folder
@@ -46,6 +78,7 @@ app.get('/rooms', function (req, res) { // Send the rooms object to anyone reque
 
 io.on('connection', function (socket) { // The socket.io connection is first called when a user requests to join a room
     socket.on('joinroom', function (msg) { // This is fired immediately from the client when joining a room. Msg is an object with a property room that is the name of the room they wish to join
+        logger.verbose("User starting to join room", {roomname: msg.room, username: msg.name});
         if (msg.room) { // If you sent a 'joinroom' request, but didn't specify which room to join please go away
             msg.room = msg.room.trim(); // fixes an issue where phones autocompleting the name will add a trailing space
             let ip = socket.request.headers["x-forwarded-for"] || socket.conn.remoteAddress.split(":")[3]; // Grab the user's IP for logging purposes
@@ -53,11 +86,11 @@ io.on('connection', function (socket) { // The socket.io connection is first cal
                 // We aren't going to do anything with this.
             });
             if (!rooms[msg.room]) { // The requested room doesn't exist in our global variable, so it's a new room and we need to create it
-                createRoom(msg.room); // Call the createRoom functionA
+                createRoom(msg.room); // Call the createRoom function
                 socket.name = msg.name; // Assign the player's name to their socket so we can get it later without having to send it from the client each time. 
                 socket.room = msg.room; // Assign their room as well
                 rooms[msg.room].userlist.push({ id: socket.id, name: msg.name, selected: false, turn: false, points: 0, hand: []}); // Add this user to the playerlist of the newly created room
-                rooms[msg.room].whitecards.push({ card_id: randomInt(10000, 99999), card_text: msg.name }); // add this user's name as a white card, for funsies
+                rooms[msg.room].whitecards.push({ card_id: util.randomInt(10000, 99999), card_text: msg.name }); // add this user's name as a white card, for funsies
             } else { // existing room
                 if (rooms[msg.room].dclist.length > 0) { // users have disconnected, check if this user is a returning one
                     for (let i = rooms[msg.room].dclist.length - 1; i >= 0; i--) { // Count backwards to ensure we're getting their most recent score in case they've disconnected many times
@@ -65,15 +98,16 @@ io.on('connection', function (socket) { // The socket.io connection is first cal
                             socket.name = msg.name;
                             socket.room = msg.room;
                             rooms[msg.room].userlist.push({ id: socket.id, name: msg.name, selected: false, turn: false, points: rooms[msg.room].dclist[i].points,  hand: rooms[msg.room].dclist[i].hand});
-				break;
+                            logger.verbose("Found user in dc list", {roomname: msg.room, username: msg.name});
+                            break;
                         }
                     }
                 } else if (!socket.name) { // user was not matched to a disconnected one, treat as new user
-			console.log("new user: " + msg.name);
+			        logger.info("New user", {roomname: msg.room, username: msg.name});
                     socket.name = msg.name;
                     socket.room = msg.room;
                     rooms[msg.room].userlist.push({ id: socket.id, name: msg.name, selected: false, turn: false, points: 0, hand: []});
-                    rooms[msg.room].whitecards.push({ card_id: randomInt(10000, 99999), card_text: msg.name }); // add this user's name as a white card, for funsies
+                    rooms[msg.room].whitecards.push({ card_id: util.randomInt(10000, 99999), card_text: msg.name }); // add this user's name as a white card, for funsies
                 }
             }
 
@@ -133,7 +167,7 @@ io.on('connection', function (socket) { // The socket.io connection is first cal
                     }
                 }
             }
-            shuffle(selectedcards); // This is important, otherwise the white cards will be displayed in the order of the players in the userlist array which means they wouldn't be anonymous
+            util.shuffle(selectedcards); // This is important, otherwise the white cards will be displayed in the order of the players in the userlist array which means they wouldn't be anonymous
             io.to(socket.room).emit('selectedcards', selectedcards); // Announce the list of selected white cards to the room
         }
     });
@@ -149,7 +183,7 @@ io.on('connection', function (socket) { // The socket.io connection is first cal
             return;
         }
         let cardsToReturn = []; // I know, why is this an array? this is just garbage code
-        let index = getRandomIndex(rooms[socket.room].whitecards); // Pick a random index to select the card to draw (there's too many random functions, also. Those should be consolidated)
+        let index = util.getRandomIndex(rooms[socket.room].whitecards); // Pick a random index to select the card to draw (there's too many random functions, also. Those should be consolidated)
         let cardDrawn = rooms[socket.room].whitecards.splice(index, 1); // Remove the selected card from the white cards array
 
         for (let i = 0; i < rooms[socket.room].userlist.length; i++) { // Loop through the users in room
@@ -173,7 +207,7 @@ io.on('connection', function (socket) { // The socket.io connection is first cal
                 if (rooms[socket.room].userlist[i].hand == undefined || rooms[socket.room].userlist[i].hand.length == 0){
                     let cardsToReturn = [];
                     for (let j = 0; j < 7; j++) {
-                        let index = getRandomIndex(rooms[socket.room].whitecards);
+                        let index = util.getRandomIndex(rooms[socket.room].whitecards);
                         let cardDrawn = rooms[socket.room].whitecards.splice(index, 1);
                         
                         if(rooms[socket.room].userlist[i].hand == undefined || rooms[socket.room].userlist[i].hand.length < 7){
@@ -199,7 +233,7 @@ io.on('connection', function (socket) { // The socket.io connection is first cal
             return;
         }
         let cardsToReturn = [];
-        let index = getRandomIndex(rooms[socket.room].blackcards);
+        let index = util.getRandomIndex(rooms[socket.room].blackcards);
         let cardDrawn = rooms[socket.room].blackcards.splice(index, 1);
         rooms[socket.room].currentBlack = cardDrawn;
         cardsToReturn.push(cardDrawn[0]);
@@ -225,12 +259,7 @@ io.on('connection', function (socket) { // The socket.io connection is first cal
                 for(let j = 0; j < rooms[socket.room].userlist[i].hand.length; j++){
                     if(rooms[socket.room].userlist[i].hand[j].card_text == msg.card_text) // Search for the winning card from their hand
                     {
-                        console.log("Winning card selected, room: " + socket.room + " name: "+ rooms[socket.room].userlist[i].name + " black_card: " + rooms[socket.room].currentBlack[0].card_id + " white_card: " + msg.card_id);
-                        pool.query('INSERT INTO log_card (name, room, black_card, winning_white_card) VALUES (?, ?, ?, ?)', [rooms[socket.room].userlist[i].name, socket.room, rooms[socket.room].currentBlack[0].card_id, msg.card_id], function (error, results, fields) { // Save what card won to the database
-                            if(error !== null){
-                                console.log(error);
-                            }
-                        });
+                        logger.info("Winning card selected black card_id %s white card_id %s ", rooms[socket.room].currentBlack[0].card_id , msg.card_id, {roomname: socket.room, username: rooms[socket.room].userlist[i].name});
                     }
                 }                
             }
@@ -255,9 +284,12 @@ io.on('connection', function (socket) { // The socket.io connection is first cal
 
     });
     socket.on('disconnect', () => { //check if room is empty and if so, delete
+        logger.debug("Disconnect triggered");
         if (socket.room) {
             for (let i = 0; i < rooms[socket.room].userlist.length; i++) {
                 if (rooms[socket.room].userlist[i].name == socket.name) { //find the user who d/c'ed
+                    logger.verbose("Found a disconnected user", {roomname: rooms[socket.room].name, username: rooms[socket.room].userlist[i].name});
+
                     if (rooms[socket.room].userlist[i].turn) { //if it's their turn, change that and make it the next player's turn
                         rooms[socket.room].userlist[i].turn = false;
                         if (i === rooms[socket.room].userlist.length - 1) {
@@ -268,8 +300,10 @@ io.on('connection', function (socket) { // The socket.io connection is first cal
                             io.to(rooms[socket.room].userlist[i + 1].id).emit('yourturn');
                         }
                     }
+                    
+                    logger.debug("Adding disconnected user to DC list, removing from userlist", {roomname: rooms[socket.room].name, username: rooms[socket.room].userlist[i].name});
                     rooms[socket.room].dclist.push(rooms[socket.room].userlist[i]); //add to dc list
-                    rooms[socket.room].userlist.splice(i, 1); //remove the d/c'ed user
+                    rooms[socket.room].userlist.splice(i, 1); //remove the d/c'ed user                    
 
                     break;
                 }
@@ -290,12 +324,13 @@ io.on('connection', function (socket) { // The socket.io connection is first cal
                         selectedcards.push({ name: rooms[socket.room].userlist[i].name, card_text: rooms[socket.room].userlist[i].selected, selected: false })
                     }
                 }
-                shuffle(selectedcards);
+                util.shuffle(selectedcards);
                 io.to(socket.room).emit('selectedcards', selectedcards);
             }
             //end redundant code
 
             if (rooms[socket.room].userlist.length == 0) {
+                logger.info("No users found, deleting room", {roomname: rooms[socket.room].name})
                 delete rooms[socket.room];
             }
         }
@@ -308,7 +343,7 @@ pool.query('SELECT CURRENT_TIMESTAMP', function (error, results, fields) { //tes
 
 http.listen(3001, function () {
     let now = new Date().toISOString();
-    console.log('Application starting at ' + now + ' running on commit hash ' + process.argv[2]); // This is being output to the log file in the Docker Volume that we are serving at /log
+    logger.info('Application starting at %s running on commit hash %s', now, process.argv[2]); // This is being output to the log file in the Docker Volume that we are serving at /log
 });
 
 function createRoom(roomname) { // Pretty straightforward
@@ -323,31 +358,9 @@ function createRoom(roomname) { // Pretty straightforward
     pool.query('SELECT * FROM black_cards', function (error, results, fields) {
         rooms[roomname].blackcards = rooms[roomname].blackcards.concat(results);
     });
+
+    logger.info('Room started', {roomname: roomname});
 }
 
-function getRandomIndex(array) { // This is used when drawing cards
-    return Math.floor(Math.random() * array.length);
-}
 
-function randomInt(low, high) { // This is used when choosing a fake card_id for new cards
-    return Math.floor(Math.random() * (high - low) + low)
-}
 
-function shuffle(array) { // Used to shuffle selected cards when presented back to Card Czar (and all of the room)
-    var currentIndex = array.length, temporaryValue, randomIndex;
-
-    // While there remain elements to shuffle...
-    while (0 !== currentIndex) {
-
-        // Pick a remaining element...
-        randomIndex = Math.floor(Math.random() * currentIndex);
-        currentIndex -= 1;
-
-        // And swap it with the current element.
-        temporaryValue = array[currentIndex];
-        array[currentIndex] = array[randomIndex];
-        array[randomIndex] = temporaryValue;
-    }
-
-    return array;
-}
