@@ -40,7 +40,7 @@ const logger = winston.createLogger({
         }),
         new winston.transports.File({ 
             handleExceptions: true,
-            level: 'debug',
+            level: 'verbose',
             filename: __dirname + '/log/app.log'
         }),
       new winston_mysql(options_default)
@@ -91,7 +91,7 @@ io.on('connection', function (socket) { // The socket.io connection is first cal
                 socket.room = msg.room; // Assign their room as well
                 logger.debug("Adding user to room with empty hand", {roomname: msg.room, username: msg.name});
                 rooms[msg.room].userlist.push({ id: socket.id, name: msg.name, selected: false, turn: false, points: 0, hand: []}); // Add this user to the playerlist of the newly created room
-                logger.debug("Adding usernames as white cards to the room", {roomname: msg.room, username: msg.name});
+                // logger.debug("Adding usernames as white cards to the room", {roomname: msg.room, username: msg.name});
                 rooms[msg.room].whitecards.push({ card_id: util.randomInt(10000, 99999), card_text: msg.name }); // add this user's name as a white card, for funsies
             } else { // existing room
                 if (rooms[msg.room].dclist.length > 0) { // users have disconnected, check if this user is a returning one
@@ -226,7 +226,7 @@ io.on('connection', function (socket) { // The socket.io connection is first cal
                         let cardDrawn = rooms[socket.room].whitecards.splice(index, 1);
                         
                         if(rooms[socket.room].userlist[i].hand == undefined || rooms[socket.room].userlist[i].hand.length < 7){
-                            logger.debug("Adding one (of seven) cards to user's hand", {roomname: socket.room, username: rooms[socket.room].userlist[i].name, cardid: cardDrawn[0].card_id});
+                            // logger.debug("Adding one (of seven) cards to user's hand", {roomname: socket.room, username: rooms[socket.room].userlist[i].name, cardid: cardDrawn[0].card_id});
                             rooms[socket.room].userlist[i].hand.push(cardDrawn[0]); //Add drawn card to the user's hand on serverside
                             cardsToReturn.push(cardDrawn[0]);
                         }
