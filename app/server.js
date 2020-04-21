@@ -70,6 +70,16 @@ app.get('/log', function (req, res) { // Send the text file located in the Docke
 
 app.use(express.static(__dirname + '/public')); // If someone requests another path, just serve them whatever matches in the public folder
 
+var whitecards, blackcards;
+
+pool.query('SELECT * FROM white_cards', function (error, results, fields) { // Pull cards from DB into array
+    whitecards = results;
+});
+
+pool.query('SELECT * FROM black_cards', function (error, results, fields) {
+    blackcards = results;
+});
+
 var rooms = {}; // Initialize our rooms object as a global variable. This will hold the server-side state of all rooms. Moving this to redis would be cool
 
 app.get('/rooms', function (req, res) { // Send the rooms object to anyone requesting it at /rooms.
@@ -153,7 +163,7 @@ io.on('connection', function (socket) { // The socket.io connection is first cal
             return;
         }
 
-        logger.verbose("Card has been selected", {roomname: socket.room, cardtext: msg});
+        logger.verbose("Card has been selected", {roomname: socket.room, cardtext: msg.card_text, cardid: msg.card_id, playername: socket.name});
 
         let userIndex = rooms[socket.room].userlist.findIndex(element => element.id === socket.id); // Grab their index in the user array
         rooms[socket.room].userlist[userIndex].selected = msg; // Note their selected card in their user in the rooms object
@@ -171,14 +181,7 @@ io.on('connection', function (socket) { // The socket.io connection is first cal
             let selectedcards = []; // Here's a handy (but somewhat redundant) array to hold all the cards selected for play with this black card
             for (let i = 0; i < rooms[socket.room].userlist.length; i++) { // Loop through all users in room
                 if (rooms[socket.room].userlist[i].selected) { // If they've selected a card (remember, one is the czar and will not have)
-                    
-                    for(let j = 0; j < rooms[socket.room].userlist[i].hand.length; j++){
-                        if (rooms[socket.room].userlist[i].hand[j].card_text == rooms[socket.room].userlist[i].selected){
-                            logger.debug("Found the selected card in a user's hand, adding to selected cards", {roomname: socket.room, username: rooms[socket.room].userlist[i].name});
-                            selectedcards.push({ name: rooms[socket.room].userlist[i].name, card_text: rooms[socket.room].userlist[i].selected, selected: false, card_id :  rooms[socket.room].userlist[i].hand[j].card_id}); // Push to array
-                            break;
-                        }
-                    }
+                    selectedcards.push({ name: rooms[socket.room].userlist[i].name, card_text: rooms[socket.room].userlist[i].selected.card_text, selected: false, card_id : rooms[socket.room].userlist[i].selected.card_text}); // Push to array
                 }
             }
             util.shuffle(selectedcards); // This is important, otherwise the white cards will be displayed in the order of the players in the userlist array which means they wouldn't be anonymous
@@ -186,12 +189,39 @@ io.on('connection', function (socket) { // The socket.io connection is first cal
         }
     });
 
+
+    socket.on('drawwhite', function (msg) {
+        if (!socket.room) {
+            io.to(socket.id).emit('whoareyou'); // This essentially tells the client they have a stale session and need to reload
+            return;
+        }
+        
+        for (let i = 0; i < rooms[socket.room].userlist.length; i++) { // Loop through the users in room
+            if (rooms[socket.room].userlist[i].name == socket.name) { 
+                for (let j = 0; j < 7; j++) {
+                    let index = util.getRandomIndex(rooms[socket.room].whitecards);
+                    let cardDrawn = rooms[socket.room].whitecards.splice(index, 1);
+                    
+                    if(rooms[socket.room].userlist[i].hand == undefined || rooms[socket.room].userlist[i].hand.length < 7){
+                        logger.debug("Adding one card to user's hand", {roomname: socket.room, username: rooms[socket.room].userlist[i].name, cardid: cardDrawn[0].card_id});
+                        rooms[socket.room].userlist[i].hand.push(cardDrawn[0]); //Add drawn card to the user's hand on serverside
+                    }
+        
+                }
+                io.to(socket.id).emit('dealcards', rooms[socket.room].userlist[i].hand);
+                break;
+            }
+        }
+        
+
+    })
+
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     ///////////// GARBAGE ALERT!!!! /////////////////////////////////////////////////////////////////////////////////////
     ///////////// There should just be a 'drawcards' function that takes the quantity and color as arguments ////////////
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    socket.on('drawonecard', function (name) { // This is called when the user has played a single card and needs to replenish it
+    /*socket.on('drawonecard', function (name) { // This is called when the user has played a single card and needs to replenish it
         if (!socket.room) {
             io.to(socket.id).emit('whoareyou'); // This essentially tells the client they have a stale session and need to reload
             return;
@@ -244,7 +274,7 @@ io.on('connection', function (socket) { // The socket.io connection is first cal
             }
         }        
 
-    });
+    }); */
     socket.on('drawblack', function () { // Pretty much the same, but different array
         if (!socket.room) {
             io.to(socket.id).emit('whoareyou'); // This essentially tells the client they have a stale session and need to reload
@@ -259,6 +289,8 @@ io.on('connection', function (socket) { // The socket.io connection is first cal
         io.to(socket.room).emit('dealblack', cardsToReturn); // Note we announce this to the whole room and not just the user who requested it
     });
 
+    
+
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     ///////////// END GARBAGE ///////////////////////////////////////////////////////////////////////////////////////////
     ///////////// (that's debatable!) ///////////////////////////////////////////////////////////////////////////////////
@@ -270,7 +302,7 @@ io.on('connection', function (socket) { // The socket.io connection is first cal
             return;
         }
         for (let i = 0; i < rooms[socket.room].userlist.length; i++) { // This is not efficient, but...
-            if (rooms[socket.room].userlist[i].selected === msg.card_text) { // ...figure out who played the card...
+            if (rooms[socket.room].userlist[i].selected.card_text === msg.card_text) { // ...figure out who played the card...
                 rooms[socket.room].userlist[i].points++; // ... and increment their points
                 // A better approach would likely be to tie the username to the selected card when it's announced to the room.
                 io.to(socket.room).emit('winningcard', msg); // Announce the winning card to the room
@@ -382,15 +414,8 @@ function createRoom(roomname) { // Pretty straightforward
     rooms[roomname].dclist = [];
     rooms[roomname].whitecards = [];
     rooms[roomname].blackcards = [];
-    pool.query('SELECT * FROM white_cards', function (error, results, fields) { // Pull cards from DB into array
-        rooms[roomname].whitecards = rooms[roomname].whitecards.concat(results);
-    });
-    pool.query('SELECT * FROM black_cards', function (error, results, fields) {
-        rooms[roomname].blackcards = rooms[roomname].blackcards.concat(results);
-    });
+    rooms[roomname].whitecards = rooms[roomname].whitecards.concat(whitecards); // add cards from global static array into our room's array
+    rooms[roomname].blackcards = rooms[roomname].blackcards.concat(blackcards); // add cards from global static array into our room's array
 
     logger.info('Room started', {roomname: roomname});
 }
-
-
-
