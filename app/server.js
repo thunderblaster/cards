@@ -196,85 +196,11 @@ io.on('connection', function (socket) { // The socket.io connection is first cal
             return;
         }
         
-        for (let i = 0; i < rooms[socket.room].userlist.length; i++) { // Loop through the users in room
-            if (rooms[socket.room].userlist[i].name == socket.name) { 
-                for (let j = 0; j < 7; j++) {
-                    let index = util.getRandomIndex(rooms[socket.room].whitecards);
-                    let cardDrawn = rooms[socket.room].whitecards.splice(index, 1);
-                    
-                    if(rooms[socket.room].userlist[i].hand == undefined || rooms[socket.room].userlist[i].hand.length < 7){
-                        logger.debug("Adding one card to user's hand", {roomname: socket.room, username: rooms[socket.room].userlist[i].name, cardid: cardDrawn[0].card_id});
-                        rooms[socket.room].userlist[i].hand.push(cardDrawn[0]); //Add drawn card to the user's hand on serverside
-                    }
-        
-                }
-                io.to(socket.id).emit('dealcards', rooms[socket.room].userlist[i].hand);
-                break;
-            }
-        }
+        dealWhiteCards(socket);
         
 
     })
 
-    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    ///////////// GARBAGE ALERT!!!! /////////////////////////////////////////////////////////////////////////////////////
-    ///////////// There should just be a 'drawcards' function that takes the quantity and color as arguments ////////////
-    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-    /*socket.on('drawonecard', function (name) { // This is called when the user has played a single card and needs to replenish it
-        if (!socket.room) {
-            io.to(socket.id).emit('whoareyou'); // This essentially tells the client they have a stale session and need to reload
-            return;
-        }
-        let cardsToReturn = []; // I know, why is this an array? this is just garbage code
-        let index = util.getRandomIndex(rooms[socket.room].whitecards); // Pick a random index to select the card to draw (there's too many random functions, also. Those should be consolidated)
-        let cardDrawn = rooms[socket.room].whitecards.splice(index, 1); // Remove the selected card from the white cards array
-
-        for (let i = 0; i < rooms[socket.room].userlist.length; i++) { // Loop through the users in room
-            if (rooms[socket.room].userlist[i].name == name) { 
-                logger.debug("Adding one card to user's hand", {roomname: socket.room, username: rooms[socket.room].userlist[i].name, cardid: cardDrawn[0].card_id});
-                rooms[socket.room].userlist[i].hand.push(cardDrawn[0]); //Add drawn card to the user's hand on serverside
-            }
-        }
-
-        cardsToReturn.push(cardDrawn[0]); // Ugh, indefensible
-        io.to(socket.id).emit('dealcards', cardsToReturn); // Send cards to the player who requested it
-    });
-    socket.on('drawfivecards', function (name) { // This is identical except there's an array. And it used to deal 5 cards but I changed that
-        if (!socket.room) {                      // without changing the name of the function. Judge away. I deserve it.
-            io.to(socket.id).emit('whoareyou'); // This essentially tells the client they have a stale session and need to reload
-            return;
-        }
-
-        for (let i = 0; i < rooms[socket.room].userlist.length; i++) { // Loop through the users in room
-            if (rooms[socket.room].userlist[i].name == name) { // if it's your turn, you will not have selected a card
-
-                if (rooms[socket.room].userlist[i].hand == undefined || rooms[socket.room].userlist[i].hand.length == 0){
-                    let cardsToReturn = [];
-                    for (let j = 0; j < 7; j++) {
-                        let index = util.getRandomIndex(rooms[socket.room].whitecards);
-                        let cardDrawn = rooms[socket.room].whitecards.splice(index, 1);
-                        
-                        if(rooms[socket.room].userlist[i].hand == undefined || rooms[socket.room].userlist[i].hand.length < 7){
-                            // logger.debug("Adding one (of seven) cards to user's hand", {roomname: socket.room, username: rooms[socket.room].userlist[i].name, cardid: cardDrawn[0].card_id});
-                            rooms[socket.room].userlist[i].hand.push(cardDrawn[0]); //Add drawn card to the user's hand on serverside
-                            cardsToReturn.push(cardDrawn[0]);
-                        }
-
-                    }
-                    logger.debug("Dealing cards back to user", {roomname: socket.room, username: rooms[socket.room].userlist[i].name});
-                    io.to(socket.id).emit('dealcards', cardsToReturn);
-			        break;
-                } else {
-                    logger.debug("User already has a hand, giving it back to them", {roomname: socket.room, username: rooms[socket.room].userlist[i].name});
-                    io.to(socket.id).emit('dealcards', rooms[socket.room].userlist[i].hand);
-			        break;
-                }
-                
-            }
-        }        
-
-    }); */
     socket.on('drawblack', function () { // Pretty much the same, but different array
         if (!socket.room) {
             io.to(socket.id).emit('whoareyou'); // This essentially tells the client they have a stale session and need to reload
@@ -288,13 +214,6 @@ io.on('connection', function (socket) { // The socket.io connection is first cal
         cardsToReturn.push(cardDrawn[0]);
         io.to(socket.room).emit('dealblack', cardsToReturn); // Note we announce this to the whole room and not just the user who requested it
     });
-
-    
-
-    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    ///////////// END GARBAGE ///////////////////////////////////////////////////////////////////////////////////////////
-    ///////////// (that's debatable!) ///////////////////////////////////////////////////////////////////////////////////
-    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     socket.on('winningcard', function (msg) { // Triggers when the card czar selects a winning card
         if (!socket.room) {
@@ -318,13 +237,16 @@ io.on('connection', function (socket) { // The socket.io connection is first cal
             }
 
             for(let j = 0; j < rooms[socket.room].userlist[i].hand.length; j++){
-                if(rooms[socket.room].userlist[i].selected == rooms[socket.room].userlist[i].hand[j].card_text){
-                    logger.verbose("Removing white card from user's hand", {roomname: socket.room, username: rooms[socket.room].userlist[i].name, cardid: rooms[socket.room].userlist[i].hand[j].card_id});
+                if(rooms[socket.room].userlist[i].selected.card_text == rooms[socket.room].userlist[i].hand[j].card_text){
+                    logger.verbose("Removing white card from user's hand", {roomname: socket.room, username: rooms[socket.room].userlist[i].name, cardid: rooms[socket.room].userlist[i].hand[j].card_id, cardtext: rooms[socket.room].userlist[i].hand[j].card_text});
                     rooms[socket.room].userlist[i].hand.splice(j, 1);
+                    let user = { room: socket.room, name: rooms[socket.room].userlist[i].name, id: rooms[socket.room].userlist[i].id };
+                    dealWhiteCards(user);
                 }
             }            
 
             rooms[socket.room].userlist[i].selected = false; // Mark all players as no longer having a selected card
+            
         }
 
         for (let i = 0; i < rooms[socket.room].userlist.length; i++) {
@@ -418,4 +340,23 @@ function createRoom(roomname) { // Pretty straightforward
     rooms[roomname].blackcards = rooms[roomname].blackcards.concat(blackcards); // add cards from global static array into our room's array
 
     logger.info('Room started', {roomname: roomname});
+}
+
+function dealWhiteCards(user) {
+    for (let i = 0; i < rooms[user.room].userlist.length; i++) { // Loop through the users in room
+        if (rooms[user.room].userlist[i].name == user.name) { 
+            for (let j = 0; j < 7; j++) {
+                let index = util.getRandomIndex(rooms[user.room].whitecards);
+                let cardDrawn = rooms[user.room].whitecards.splice(index, 1);
+                
+                if(rooms[user.room].userlist[i].hand == undefined || rooms[user.room].userlist[i].hand.length < 7){
+                    logger.debug("Adding one card to user's hand", {roomname: user.room, username: rooms[user.room].userlist[i].name, cardid: cardDrawn[0].card_id});
+                    rooms[user.room].userlist[i].hand.push(cardDrawn[0]); //Add drawn card to the user's hand on serverside
+                }
+    
+            }
+            io.to(user.id).emit('dealcards', rooms[user.room].userlist[i].hand);
+            break;
+        }
+    }
 }

@@ -3,3 +3,4 @@ config.js
 .sass-cache
 .vscode
 app/log
+app/public/css/styles.css

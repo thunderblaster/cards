@@ -1,3 +1,9 @@
+Vue.directive('focus', {
+    inserted: function (el) {
+        el.focus()
+    }
+});
+
 var app = new Vue({
     el: '#app',
     data: { // All our client side variables
@@ -98,9 +104,6 @@ var app = new Vue({
             });
             socket.on('selectedcards', function(msg) { // The server is showing us the white cards submitted by other players for selection by the card czar
                 app.selectedcards = msg; // Replace our array with the one from the server
-                let cardIndex = app.whitecards.findIndex(element => element.selected === true); // Now that this is commited, remove the card we selected from our hand. 
-                app.whitecards.splice(cardIndex, 1); // We don't want to splice the card on selection, because it can be deselected
-                socket.emit('drawwhite', this.name); // Request another white card from the server
             });
             socket.on('winningcard', function(msg) { // The card that the czar selected to win
                 let cardIndex = app.selectedcards.findIndex(element => element.name === msg.name); // Find this card in our client-side array
@@ -137,3 +140,4 @@ function clearBetweenRounds() {
         window.setTimeout(()=>{socket.emit('drawblack');}, 700); // This setTimeout is a lazy hack to fix a race condition where the black card would sometimes
     } // get drawn by a very fast client before the previous black card would have been removed by a very slow client, causing the newly drawn card to be deleted
 }
+
