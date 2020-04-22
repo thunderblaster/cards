@@ -1,3 +1,7 @@
+body {
+  overflow-y: hidden; /* This fixes a bug in Android Chrome, do NOT change or remove.  See #40 */
+}
+
 ul {
   list-style-type: none;
 }
@@ -198,7 +202,7 @@ button, input {
   #mycards {
     top: 3.5em;
     bottom: 0;
-    left: -1em;
+    left: -0.75em;
     width: 50vw;
     overflow-y: scroll;
   }
