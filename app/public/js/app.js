@@ -1,3 +1,9 @@
+Vue.directive('focus', {
+    inserted: function (el) {
+        el.focus()
+    }
+});
+
 var app = new Vue({
     el: '#app',
     data: { // All our client side variables
@@ -45,7 +51,7 @@ var app = new Vue({
                     this.whitecards[i].selected = false;
                 }
                 this.whitecards[index].selected = true; //...and select the one the user clicked
-                socket.emit('selected', this.whitecards[index].card_text); // Tell the server which card we picked
+                socket.emit('selected', this.whitecards[index]); // Tell the server which card we picked
                 this.$forceUpdate(); // i don't know why Vue isn't automatically updating here, but it's not
             }
         },
@@ -87,10 +93,8 @@ var app = new Vue({
                 }
                 
             })
-            socket.on('dealcards', function(msg) { // The server has given us an arbitrary amount of white cards
-                for(let i=0; i<msg.length; i++) { // Loop through them...
-                    app.whitecards.push(msg[i]); // ...and add to our hand
-                }
+            socket.on('dealcards', function(msg) { // The server has updated our hand
+                app.whitecards = msg; // Update it
             });
             socket.on('dealblack', function(msg) { // The server dealt a black card
                 app.blackcard = msg; // Replace whatever we had with the new one
@@ -100,9 +104,6 @@ var app = new Vue({
             });
             socket.on('selectedcards', function(msg) { // The server is showing us the white cards submitted by other players for selection by the card czar
                 app.selectedcards = msg; // Replace our array with the one from the server
-                let cardIndex = app.whitecards.findIndex(element => element.selected === true); // Now that this is commited, remove the card we selected from our hand. 
-                app.whitecards.splice(cardIndex, 1); // We don't want to splice the card on selection, because it can be deselected
-                socket.emit('drawonecard', this.name); // Request another white card from the server
             });
             socket.on('winningcard', function(msg) { // The card that the czar selected to win
                 let cardIndex = app.selectedcards.findIndex(element => element.name === msg.name); // Find this card in our client-side array
@@ -115,7 +116,7 @@ var app = new Vue({
             })
             // Okay, listeners set up
             socket.emit('joinroom', {room: this.room, name: this.name}); // let's tell the server we're joining the room
-            window.setTimeout(()=>{socket.emit('drawfivecards', this.name);}, 1000); // ask for cards, but give the server a moment to ensure the room gets created and we get joined to it
+            window.setTimeout(()=>{socket.emit('drawwhite', this.name);}, 1000); // ask for cards, but give the server a moment to ensure the room gets created and we get joined to it
             this.roomjoined = true; // update the client that we've joined a room to update the view
         },
     },
@@ -139,3 +140,4 @@ function clearBetweenRounds() {
         window.setTimeout(()=>{socket.emit('drawblack');}, 700); // This setTimeout is a lazy hack to fix a race condition where the black card would sometimes
     } // get drawn by a very fast client before the previous black card would have been removed by a very slow client, causing the newly drawn card to be deleted
 }
+
