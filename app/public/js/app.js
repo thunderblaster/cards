@@ -137,14 +137,18 @@ var app = new Vue({
         }
         setTimeout(function() {app.chatlink.visible=false;}, 12000); // Start with chatlink open, but autohide after a while
 
-        //if (document.location.hostname.search("biggerblacker.com") !== -1) {
-            window.ga = window.ga || ((...args) => (ga.q = ga.q || []).push(args));
+        if (document.location.hostname.search("biggerblacker.com") !== -1) {
+
+        (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+            (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+            m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+            })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
             ga('create', 'UA-163364396-1', 'auto');
-            ga('set', 'transport', 'beacon');
             ga('send', 'pageview');
 
             logEvent('siteAction', 'pageLoaded', 'HomePageLoaded');
-        //}
+        }
     }
 });
 
@@ -157,11 +161,8 @@ function clearBetweenRounds() {
 }
 
 function logEvent(eventCategory, eventAction, eventLabel) {
-    ga('send', {
-        hitType: 'event',
-        eventCategory: eventCategory,
-        eventAction: eventAction,
-        eventLabel: eventLabel
-      });
+    if(ga){
+        ga('send', 'event', eventCategory, eventAction, eventLabel);
+    }
 };
 
