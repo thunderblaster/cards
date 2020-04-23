@@ -51,15 +51,18 @@ var app = new Vue({
                     this.whitecards[i].selected = false;
                 }
                 this.whitecards[index].selected = true; //...and select the one the user clicked
+                logEvent('cardAction', 'selectedCard', this.whitecards[index].card_id);
                 socket.emit('selected', this.whitecards[index]); // Tell the server which card we picked
                 this.$forceUpdate(); // i don't know why Vue isn't automatically updating here, but it's not
             }
         },
         selectWinningCard: function(index) { // This is called when its your turn and you select the winning white card
+            logEvent('cardAction', 'selectedWinningCard', app.selectedcards[index].card_id);
             socket.emit('winningcard', app.selectedcards[index]); // Tell the server which card won
             app.turn = false; // Mark it as no longer your turn
         },
         startgame: function () { // Called when the user clicks the "Start Game" button
+            logEvent('gameEvent', 'gameStarted', this.room);
             socket.emit('startgame'); // Tell the server we want to start the game
         },
         joinroom: function() { // Called when the user clicks join room
@@ -72,6 +75,8 @@ var app = new Vue({
                 return;
             }
             this.room = this.room.toLowerCase(); // We don't want rooms to be case sensitive and treat room1 and Room1 as different rooms
+
+            logEvent('gameEvent', 'roomJoined', this.name);
             
             socket = io(); // Okay, we've passed validation, time to create a socket connection with the server.
             // Set up listeners
@@ -97,6 +102,7 @@ var app = new Vue({
                 app.whitecards = msg; // Update it
             });
             socket.on('dealblack', function(msg) { // The server dealt a black card
+                ga('send', 'event', 'cardAction', 'dealtCard', 'blackCard', msg.card_text);
                 app.blackcard = msg; // Replace whatever we had with the new one
             });
             socket.on('gamestarted', function () { // The server is telling us the game has started
@@ -120,7 +126,7 @@ var app = new Vue({
             this.roomjoined = true; // update the client that we've joined a room to update the view
         },
     },
-    mounted() { // This is essentially like jQuery's onReady()
+    mounted() { // This is essentially like jQuery's onReady()        
         const Http = new XMLHttpRequest();
         const url='/version'; // We're going to get the git info from Node
         Http.open("GET", url);
@@ -130,6 +136,15 @@ var app = new Vue({
             app.version = JSON.parse(Http.responseText); // And add it to Vue to be displayed on the front page
         }
         setTimeout(function() {app.chatlink.visible=false;}, 12000); // Start with chatlink open, but autohide after a while
+
+        //if (document.location.hostname.search("biggerblacker.com") !== -1) {
+            window.ga = window.ga || ((...args) => (ga.q = ga.q || []).push(args));
+            ga('create', 'UA-163364396-1', 'auto');
+            ga('set', 'transport', 'beacon');
+            ga('send', 'pageview');
+
+            logEvent('siteAction', 'pageLoaded', 'HomePageLoaded');
+        //}
     }
 });
 
@@ -140,4 +155,13 @@ function clearBetweenRounds() {
         window.setTimeout(()=>{socket.emit('drawblack');}, 700); // This setTimeout is a lazy hack to fix a race condition where the black card would sometimes
     } // get drawn by a very fast client before the previous black card would have been removed by a very slow client, causing the newly drawn card to be deleted
 }
+
+function logEvent(eventCategory, eventAction, eventLabel) {
+    ga('send', {
+        hitType: 'event',
+        eventCategory: eventCategory,
+        eventAction: eventAction,
+        eventLabel: eventLabel
+      });
+};
 

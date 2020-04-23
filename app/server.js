@@ -91,7 +91,7 @@ io.on('connection', function (socket) { // The socket.io connection is first cal
         logger.verbose("User starting to join room", {roomname: msg.room, username: msg.name});
         if (msg.room) { // If you sent a 'joinroom' request, but didn't specify which room to join please go away
             msg.room = msg.room.trim(); // fixes an issue where phones autocompleting the name will add a trailing space
-            let ip = socket.request.headers["x-forwarded-for"] || socket.conn.remoteAddress.split(":")[3]; // Grab the user's IP for logging purposes
+            let ip = socket.request.headers["x-forwarded-for"] || socket.conn.remoteAddress.split(":")[3] || "localhost"; // Grab the user's IP for logging purposes
             pool.query('INSERT INTO log_user (name, room, ip_addr) VALUES (?, ?, ?)', [msg.name, msg.room, ip], function (error, results, fields) { // Just log who they are, where they're from and which room they're joining
                 if(error){
                     logger.error(error.message);
