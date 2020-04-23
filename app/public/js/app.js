@@ -137,7 +137,7 @@ var app = new Vue({
         }
         setTimeout(function() {app.chatlink.visible=false;}, 12000); // Start with chatlink open, but autohide after a while
 
-        //if (document.location.hostname.search("biggerblacker.com") !== -1) {
+        if (document.location.hostname.search("biggerblacker.com") !== -1) {
 
         (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
             (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
@@ -148,7 +148,7 @@ var app = new Vue({
             ga('send', 'pageview');
 
             logEvent('siteAction', 'pageLoaded', 'HomePageLoaded');
-        //}
+        }
     }
 });
 
@@ -161,6 +161,8 @@ function clearBetweenRounds() {
 }
 
 function logEvent(eventCategory, eventAction, eventLabel) {
-    ga('send', 'event', eventCategory, eventAction, eventLabel);
+    if(ga){
+        ga('send', 'event', eventCategory, eventAction, eventLabel);
+    }
 };
 
