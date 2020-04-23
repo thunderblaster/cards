@@ -92,8 +92,10 @@ io.on('connection', function (socket) { // The socket.io connection is first cal
         if (msg.room) { // If you sent a 'joinroom' request, but didn't specify which room to join please go away
             msg.room = msg.room.trim(); // fixes an issue where phones autocompleting the name will add a trailing space
             let ip = socket.request.headers["x-forwarded-for"] || socket.conn.remoteAddress.split(":")[3]; // Grab the user's IP for logging purposes
-            pool.query('INSERT INTO log (name, room, ip_addr) VALUES (?, ?, ?)', [msg.name, msg.room, ip], function (error, results, fields) { // Just log who they are, where they're from and which room they're joining
-                // We aren't going to do anything with this.
+            pool.query('INSERT INTO log_user (name, room, ip_addr) VALUES (?, ?, ?)', [msg.name, msg.room, ip], function (error, results, fields) { // Just log who they are, where they're from and which room they're joining
+                if(error){
+                    logger.error(error.message);
+                }
             });
             if (!rooms[msg.room]) { // The requested room doesn't exist in our global variable, so it's a new room and we need to create it
                 createRoom(msg.room); // Call the createRoom function
