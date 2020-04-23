@@ -13,11 +13,25 @@ services:
     volumes:
       - './app:/usr/src/cards'
       - 'cards-node-data:/log'
+    links:
+      - 'cards-redis:redis'
     networks:
       - app
-
+      
+  cards-redis:
+    ports:
+      - 6379
+    image: 'redis:3'
+    volumes:
+      - 'cards-redis-data:/data'
+    container_name: 'cards-redis'
+    hostname: 'cards-redis'
+    networks:
+      - 'app'
+      
 volumes:
   cards-node-data:
+  cards-redis-data:
 
 networks:
   app:

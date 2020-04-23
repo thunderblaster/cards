@@ -1,3 +1,8 @@
+body {
+  overflow-y: hidden;
+  /* This fixes a bug in Android Chrome, do NOT change or remove.  See #40 */
+}
+
 ul {
   list-style-type: none;
 }
@@ -20,7 +25,7 @@ button, input {
 
 #beerlink {
   padding-top: 1em;
-  float:right;
+  float: right;
 }
 
 .footer {
@@ -170,7 +175,7 @@ button, input {
 
 @media (max-width: 900px) and (orientation: landscape) {
   .card {
-    font-size: 100%;
+    font-size: 80%;
     margin-bottom: -1em;
     min-width: 15vw;
   }
@@ -189,7 +194,7 @@ button, input {
     display: none;
   }
 
-  .hide-chat{
+  .hide-chat {
     position: absolute;
     right: 200px;
   }
@@ -198,7 +203,7 @@ button, input {
   #mycards {
     top: 3.5em;
     bottom: 0;
-    left: -1em;
+    left: -0.75em;
     width: 50vw;
     overflow-y: scroll;
   }
@@ -216,7 +221,7 @@ button, input {
     margin-left: 0;
     margin-top: 0.5em;
     margin-bottom: 0.5em;
-    font-size: 100%;
+    font-size: 80%;
   }
 
   .blackcard {

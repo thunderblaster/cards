@@ -2,6 +2,10 @@ var express = require('express'); // Load Express (web server)
 var app = express(); // Initialize it
 var http = require('http').createServer(app); // Socket.io requires the Express app to be run through the http library.  Not sure why.
 var io = require('socket.io')(http); // Load and initialize Socket.io to our webserver
+
+const redisAdapter = require('socket.io-redis');
+io.adapter(redisAdapter({host: 'cards-redis', port: 6379}));
+
 var mysql = require('mysql'); // Load MySQL
 const config = require('./config'); // Get our config file
 const util = require('./utilities');
