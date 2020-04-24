@@ -102,7 +102,7 @@ var app = new Vue({
                 app.whitecards = msg; // Update it
             });
             socket.on('dealblack', function(msg) { // The server dealt a black card
-                logevent('cardAction', 'dealtBlackCard', msg.card_text, msg.card_id);
+                logEvent('cardAction', 'dealtBlackCard', msg.card_text, msg.card_id);
                 app.blackcard = msg; // Replace whatever we had with the new one
             });
             socket.on('gamestarted', function () { // The server is telling us the game has started
