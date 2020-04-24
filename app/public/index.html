@@ -7,9 +7,10 @@
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
 	<meta name="viewport" content="width=device-width,initial-scale=1.0">
 	<meta name="twitter:card" content="summary_large_image">
+	<meta name="twitter:site" content="@biggerblacker">
 	<meta name="twitter:title" content="Bigger. Blacker. An online, unofficial Cards Against Humanity clone.">
 	<meta name="twitter:description" content="A game designed with social distancing in mind, Bigger Blacker is an online port of the Cards Against Humanity card game. It allows players to play the popular card game online against friends.">
-	<meta name="twitter:image:src" content="biggerblacker.com/img/bblogo.png">
+	<meta name="twitter:image" content="biggerblacker.com/img/bblogo.png">
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" rel="stylesheet">
 	<link href="/css/all.min.css" rel="stylesheet"> <!-- Font Awesome CSS -->
 	<link href="/css/styles.css" rel="stylesheet"> <!-- Custom CSS -->
@@ -18,7 +19,7 @@
 <body>
 	<div id="app">
 		<div class="header">
-			<h1 id="title">Bigger. Blacker.</h1>
+			<h1 id="title" onClick="window.location.reload();">Bigger. Blacker.</h1>
 			<span id="beerlink"><a href="https://paypal.me/pools/c/8oldMsnktL" target="_blank">Buy us a beer!</a></span>
 		</div>
 		<div v-if="!roomjoined">
@@ -94,7 +95,7 @@
     				<ul v-if="!turn&&!selectedcards.length">
     					<!-- If it's not your turn and players are not done submitting cards to the Czar. This displays the cards in your hand -->
     					<li v-for="(card, index) in whitecards" class="card whitecard" @click="selectCard(index)" :class="{ selected: card.selected }" :key="card.card_id">
-                            <p v-html="card.card_text"></p>
+							<p v-html="card.card_text"></p>
     					</li>
     				</ul>
     				<ul v-if="selectedcards.length&&turn">

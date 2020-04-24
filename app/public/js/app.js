@@ -51,13 +51,13 @@ var app = new Vue({
                     this.whitecards[i].selected = false;
                 }
                 this.whitecards[index].selected = true; //...and select the one the user clicked
-                logEvent('cardAction', 'selectedCard', this.whitecards[index].card_id);
+                logEvent('cardAction', 'selectedCard', this.whitecards[index].card_text, this.whitecards[index].card_id);
                 socket.emit('selected', this.whitecards[index]); // Tell the server which card we picked
                 this.$forceUpdate(); // i don't know why Vue isn't automatically updating here, but it's not
             }
         },
         selectWinningCard: function(index) { // This is called when its your turn and you select the winning white card
-            logEvent('cardAction', 'selectedWinningCard', app.selectedcards[index].card_id);
+            logEvent('cardAction', 'selectedWinningCard', app.selectedcards[index].card_text, app.selectedcards[index].card_id);
             socket.emit('winningcard', app.selectedcards[index]); // Tell the server which card won
             app.turn = false; // Mark it as no longer your turn
         },
@@ -102,7 +102,7 @@ var app = new Vue({
                 app.whitecards = msg; // Update it
             });
             socket.on('dealblack', function(msg) { // The server dealt a black card
-                ga('send', 'event', 'cardAction', 'dealtCard', 'blackCard', msg.card_text);
+                logevent('cardAction', 'dealtBlackCard', msg.card_text, msg.card_id);
                 app.blackcard = msg; // Replace whatever we had with the new one
             });
             socket.on('gamestarted', function () { // The server is telling us the game has started
@@ -160,9 +160,9 @@ function clearBetweenRounds() {
     } // get drawn by a very fast client before the previous black card would have been removed by a very slow client, causing the newly drawn card to be deleted
 }
 
-function logEvent(eventCategory, eventAction, eventLabel) {
-    if(ga){
-        ga('send', 'event', eventCategory, eventAction, eventLabel);
+function logEvent(eventCategory, eventAction, eventLabel, eventValue) {
+    if (document.location.hostname.search("biggerblacker.com") !== -1) {
+        ga('send', 'event', eventCategory, eventAction, eventLabel, eventValue);
     }
 };
 
