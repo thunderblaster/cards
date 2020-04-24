@@ -18,7 +18,7 @@
 <body>
 	<div id="app">
 		<div class="header">
-			<h1 id="title">Bigger. Blacker.</h1>
+			<h1 id="title" onClick="window.location.reload();">Bigger. Blacker.</h1>
 			<span id="beerlink"><a href="https://paypal.me/pools/c/8oldMsnktL" target="_blank">Buy us a beer!</a></span>
 		</div>
 		<div v-if="!roomjoined">
@@ -94,7 +94,7 @@
     				<ul v-if="!turn&&!selectedcards.length">
     					<!-- If it's not your turn and players are not done submitting cards to the Czar. This displays the cards in your hand -->
     					<li v-for="(card, index) in whitecards" class="card whitecard" @click="selectCard(index)" :class="{ selected: card.selected }" :key="card.card_id">
-                            <p v-html="card.card_text"></p>
+							<p v-html="card.card_text"></p>
     					</li>
     				</ul>
     				<ul v-if="selectedcards.length&&turn">
