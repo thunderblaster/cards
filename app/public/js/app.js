@@ -161,7 +161,7 @@ function clearBetweenRounds() {
 }
 
 function logEvent(eventCategory, eventAction, eventLabel) {
-    if(ga){
+    if (document.location.hostname.search("biggerblacker.com") !== -1) {
         ga('send', 'event', eventCategory, eventAction, eventLabel);
     }
 };
