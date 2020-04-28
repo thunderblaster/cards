@@ -98,7 +98,7 @@ io.on('connection', function (socket) { // The socket.io connection is first cal
                 }
             });
             if (!rooms[msg.room]) { // The requested room doesn't exist in our global variable, so it's a new room and we need to create it
-                createRoom(msg.room); // Call the createRoom function
+                createRoom(msg.room, msg.winningscore); // Call the createRoom function
                 socket.name = msg.name; // Assign the player's name to their socket so we can get it later without having to send it from the client each time. 
                 socket.room = msg.room; // Assign their room as well
                 logger.debug("Adding user to room with empty hand", {roomname: msg.room, username: msg.name});
@@ -172,22 +172,10 @@ io.on('connection', function (socket) { // The socket.io connection is first cal
 
         io.to(socket.room).emit('userlist', rooms[socket.room].userlist); // Announce the updated userlist to the room, showing that this user has selected a card
         // We need to check to see if this was the last user to select a card and if so, show the selected cards to everyone and let the Czar make a decision
-        let ready = 0; // The ready variable will count how many users are ready (either have selected a card or don't need to because they're the Czar)
-        for (let i = 0; i < rooms[socket.room].userlist.length; i++) { // Loop through the users in room
-            if (rooms[socket.room].userlist[i].turn || rooms[socket.room].userlist[i].selected) { // if it's your turn, you will not have selected a card
-                ready++; // Increment for users who are ready
-            }
-        }
-        if (ready === rooms[socket.room].userlist.length) { // everyone is ready
-            logger.verbose("Everyone is ready", {roomname: socket.room});
-            let selectedcards = []; // Here's a handy (but somewhat redundant) array to hold all the cards selected for play with this black card
-            for (let i = 0; i < rooms[socket.room].userlist.length; i++) { // Loop through all users in room
-                if (rooms[socket.room].userlist[i].selected) { // If they've selected a card (remember, one is the czar and will not have)
-                    selectedcards.push({ name: rooms[socket.room].userlist[i].name, card_text: rooms[socket.room].userlist[i].selected.card_text, selected: false, card_id : rooms[socket.room].userlist[i].selected.card_text}); // Push to array
-                }
-            }
-            util.shuffle(selectedcards); // This is important, otherwise the white cards will be displayed in the order of the players in the userlist array which means they wouldn't be anonymous
-            io.to(socket.room).emit('selectedcards', selectedcards); // Announce the list of selected white cards to the room
+        let ready = isRoomReady(socket.room);
+            
+        if (ready) { // everyone is ready
+            displaySelectedCards(socket.room)
         }
     });
 
@@ -233,9 +221,12 @@ io.on('connection', function (socket) { // The socket.io connection is first cal
                     {
                         logger.info("Winning card selected black card_id %s white card_id %s ", rooms[socket.room].currentBlack[0].card_id , msg.card_id, {roomname: socket.room, username: rooms[socket.room].userlist[i].name});
                     }
-
-
-                }                
+                }       
+                
+                if(rooms[socket.room].userlist[i].points == rooms[socket.room].winningscore){
+                    io.to(socket.room).emit('winningplayer', rooms[socket.room].userlist[i].name);
+                    break;
+                }
             }
 
             for(let j = 0; j < rooms[socket.room].userlist[i].hand.length; j++){
@@ -295,25 +286,13 @@ io.on('connection', function (socket) { // The socket.io connection is first cal
             }
             socket.to(socket.room).emit('userlist', rooms[socket.room].userlist); //send updated userlist showing the user removed
 
-            //check if room is ready. this should be its own function and isn't DRY, but whatever. Needs to be done in case all players except the disconnector were ready
-            let ready = 0;
-            for (let i = 0; i < rooms[socket.room].userlist.length; i++) {
-                if (rooms[socket.room].userlist[i].turn || rooms[socket.room].userlist[i].selected) { // if it's your turn, you will not have selected a card
-                    ready++;
-                }
+            //check if room is ready.  Needs to be done in case all players except the disconnector were ready
+            
+            let ready = isRoomReady(socket.room);
+            
+            if (ready) { // everyone is ready
+                displaySelectedCards(socket.room)
             }
-            if (ready === rooms[socket.room].userlist.length) { // everyone is ready
-                logger.info("Everyone is ready", {roomname: socket.room});
-                let selectedcards = [];
-                for (let i = 0; i < rooms[socket.room].userlist.length; i++) {
-                    if (rooms[socket.room].userlist[i].selected) {
-                        selectedcards.push({ name: rooms[socket.room].userlist[i].name, card_text: rooms[socket.room].userlist[i].selected, selected: false })
-                    }
-                }
-                util.shuffle(selectedcards);
-                io.to(socket.room).emit('selectedcards', selectedcards);
-            }
-            //end redundant code
 
             if (rooms[socket.room].userlist.length == 0) {
                 logger.info("No users found, deleting room", {roomname: rooms[socket.room].name})
@@ -332,8 +311,9 @@ http.listen(3001, function () {
     logger.info('Application starting at %s running on commit hash %s', now, process.argv[2]); // This is being output to the log file in the Docker Volume that we are serving at /log
 });
 
-function createRoom(roomname) { // Pretty straightforward
+function createRoom(roomname, winningscore) { // Pretty straightforward
     rooms[roomname] = {}; // Initialize our various variables
+    rooms[roomname].winningscore = winningscore;
     rooms[roomname].userlist = [];
     rooms[roomname].dclist = [];
     rooms[roomname].whitecards = [];
@@ -341,7 +321,7 @@ function createRoom(roomname) { // Pretty straightforward
     rooms[roomname].whitecards = rooms[roomname].whitecards.concat(whitecards); // add cards from global static array into our room's array
     rooms[roomname].blackcards = rooms[roomname].blackcards.concat(blackcards); // add cards from global static array into our room's array
 
-    logger.info('Room started', {roomname: roomname});
+    logger.info('Room started', {roomname: roomname, winningscore: winningscore});
 }
 
 function dealWhiteCards(user) {
@@ -361,4 +341,31 @@ function dealWhiteCards(user) {
             break;
         }
     }
+}
+
+function isRoomReady(room) {
+    let ready = 0;
+    for (let i = 0; i < rooms[room].userlist.length; i++) {
+        if (rooms[room].userlist[i].turn || rooms[room].userlist[i].selected) { // if it's your turn, you will not have selected a card
+            ready++;
+        }
+    }
+    if (ready === rooms[room].userlist.length) { // everyone is ready
+        logger.info("Everyone is ready", {roomname: room});
+        return true;
+    } else {
+        return false;
+    }
+}
+
+function displaySelectedCards(room) {
+    let selectedcards = []; // Here's a handy (but somewhat redundant) array to hold all the cards selected for play with this black card
+    for (let i = 0; i < rooms[room].userlist.length; i++) { // Loop through all users in room
+        if (rooms[room].userlist[i].selected) { // If they've selected a card (remember, one is the czar and will not have)
+            selectedcards.push({ name: rooms[room].userlist[i].name, card_text: rooms[room].userlist[i].selected.card_text, selected: false, card_id : rooms[room].userlist[i].selected.card_id}); // Push to array
+        }
+    }
+    util.shuffle(selectedcards); // This is important, otherwise the white cards will be displayed in the order of the players in the userlist array which means they wouldn't be anonymous
+    io.to(room).emit('selectedcards', selectedcards); // Announce the list of selected white cards to the room
+        
 }
