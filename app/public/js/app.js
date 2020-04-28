@@ -12,6 +12,7 @@ var app = new Vue({
         blackcard: [], // I know, this shouldn't be an array
         room: "", // Name of room
         name: "", // Name of player
+        winningtoggle: false,
         winningscore: 0,
         roomjoined: false,
         gamestarted: false,

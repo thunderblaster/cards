@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html>
+
 <head>
 	<!-- Global site tag (gtag.js) - Google Analytics -->
 	<script src="https://www.googletagmanager.com/gtag/js?id=UA-163364396-1"></script>
@@ -11,7 +12,8 @@
 	<meta property="og:type" content="website" />
 	<meta property="og:url" content="https://biggerblacker.com/" />
 	<meta property="og:title" content="Bigger. Blacker." />
-	<meta property="og:description" content="A game designed with social distancing in mind, Bigger Blacker is an online port of the Cards Against Humanity card game. It allows players to play the popular card game online against friends." />
+	<meta property="og:description"
+		content="A game designed with social distancing in mind, Bigger Blacker is an online port of the Cards Against Humanity card game. It allows players to play the popular card game online against friends." />
 	<meta property="og:image" content="https://biggerblacker.com/img/bblogo.png" />
 
 	<!-- twitter card tags additive with the og: tags -->
@@ -19,15 +21,17 @@
 	<meta name="twitter:domain" value="biggerblacker.com" />
 	<meta name="twitter:site" content="@biggerblacker" />
 	<meta name="twitter:title" content="Bigger. Blacker." />
-	<meta name="twitter:description" content="A game designed with social distancing in mind, Bigger Blacker is an online port of the Cards Against Humanity card game. It allows players to play the popular card game online against friends." />
+	<meta name="twitter:description"
+		content="A game designed with social distancing in mind, Bigger Blacker is an online port of the Cards Against Humanity card game. It allows players to play the popular card game online against friends." />
 	<meta name="twitter:image" content="biggerblacker.com/img/bblogo.png" />
 	<meta name="twitter:url" value="https://biggerblacker.com/" />
 
-    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" rel="stylesheet">
+	<link href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" rel="stylesheet">
 	<link href="/css/all.min.css" rel="stylesheet"> <!-- Font Awesome CSS -->
 	<link href="/css/styles.css" rel="stylesheet"> <!-- Custom CSS -->
 	<title>Bigger Blacker</title>
 </head>
+
 <body>
 	<div id="app">
 		<div class="header">
@@ -36,26 +40,48 @@
 		</div>
 		<div v-if="!roomjoined">
 			<!-- this is the join a room view -->
-			
-			<div class="container">				
-    			<div class="row">					
-        			<div class="col-12">            			        			
-            			<div>
-                			What's your name? <input v-model="name" class="lobbyinput" v-focus><br />
-							Enter a room name to join: <input v-model="room" v-on:keyup.enter="maxscore" class="lobbyinput"><br />
-							Winning score (optional): <input v-model="winningscore" class="lobbyinput" v-on:keyup.enter="joinroom">
-                            <button @click="joinroom"><i class="fas fa-arrow-right"></i></button>
-						</div>
-						<br>
-						<br>
+
+			<div class="container" id="lobby">
+				<div class="row">
+					<div class="col-12">
+
+							<form id="lobbyform">
+								<div class="form-group">
+									<label for="nameinput">What's your name?</label>
+									<input v-model="name" class="outline form-control" v-focus id="nameinput">
+								</div>
+								<div class="form-group">
+									<label for="roominput">Enter a room name to join:</label>
+									<input v-model="room" v-on:keyup.enter="maxscore" class="outline form-control" id="roominput">
+								</div>
+								<div class="form-group">
+
+									<label for="scoreinput">Winning score <i>(only allowed to be set by first player in room)</i>: </label>
+									<div class="input-group mb-3 outline">
+										<div class="input-group-prepend">
+											<div class="input-group-text">
+												<input type="checkbox" aria-label="Checkbox for winning score"
+													v-model="winningtoggle">
+											</div>
+										</div>
+										<input type="number" class="form-control" aria-label="winning score value"
+											v-model="winningscore" class="outline form-control" v-on:keyup.enter="joinroom" id="scoreinput" :disabled="!winningtoggle">
+									</div>
+								</div>
+								<button @click="joinroom" class="btn outline"><i class="fas fa-arrow-right"></i></button>
+							</form>
 						<div>
-							BiggerBlacker.com is an online version of the Cards Against Humanity card game, which is available at <a href='http://cardsagainsthumanity.com' target="_blank">cardsagainsthumanity.com</a>. 
-							The cards are distributed under a <a href="https://creativecommons.org/licenses/by-nc-sa/2.0/" target="_blank">Commons BY-NC-SA 2.0 license</a>. 
+							BiggerBlacker.com is an online version of the Cards Against Humanity card game, which is
+							available at <a href='http://cardsagainsthumanity.com'
+								target="_blank">cardsagainsthumanity.com</a>.
+							The cards are distributed under a <a
+								href="https://creativecommons.org/licenses/by-nc-sa/2.0/" target="_blank">Commons
+								BY-NC-SA 2.0 license</a>.
 							This website is in no way endorsed or sponsored by cardsagainsthumanity.com.
 						</div>
-            			<!-- the v-on:keyup.enter listens for the Enter keypress and calls the same function as clicking the button -->
-            			<span id="eggplant">🍆</span>  
-        			</div>
+						<!-- the v-on:keyup.enter listens for the Enter keypress and calls the same function as clicking the button -->
+						<span id="eggplant">🍆</span>
+					</div>
 				</div>
 				<div class="version">
 					<!-- ...passed to Node as command line arguments, served to the client via an endpoint that Vue sends an AJAX to and updates the client-side variable -->
@@ -64,34 +90,36 @@
 			</div>
 		</div>
 		<div v-if="roomjoined">
-			<!-- this is the playing cards view -->			
-			<div class="game-header">				
-    			
-				<button @click="startgame" v-if="!gamestarted" id="startbutton">Start Game!</button>
-    			<div id="playerlist">
-    				<!-- The playerlist in the top right -->
-    				<ul>
-    					<li>
-                            <u>{{room}}:</u>
-                        </li> <!-- The room name -->
-    					<li v-for="player in players" :key="player.name" :class="{ selected: player.selected, turn: player.turn }">
-                            {{player.name}} - {{player.points}}
-                        </li> <!-- List the name and points of each player in array -->
-    				</ul>
-    			</div>
+			<!-- this is the playing cards view -->
+			<div class="game-header">
+
+				<button @click="startgame" v-if="!gamestarted" class="outline btn" id="startbutton">Start Game!</button>
+				<div id="playerlist">
+					<!-- The playerlist in the top right -->
+					<ul>
+						<li>
+							<u>{{room}}:</u>
+						</li> <!-- The room name -->
+						<li v-for="player in players" :key="player.name"
+							:class="{ selected: player.selected, turn: player.turn }">
+							{{player.name}} - {{player.points}}
+						</li> <!-- List the name and points of each player in array -->
+					</ul>
+				</div>
 			</div>
 			<div id="chatlink" v-if="chatlink.visible">
 				<!-- Only show this if the chatlink variable is true. Otherwise, show the icon to show this -->
 				<div>Link To This Room's Chat:</div>
 				<div id="chatlinkgroup" v-if="chatlink.current">
 					<a v-bind:href="chatlink.current" target="_blank">{{chatlink.current}}</a>
-					<button @click="editchatlink"><i class="fas fa-pencil-alt"></i></button>
+					<button @click="editchatlink" class="outline btn"><i class="fas fa-pencil-alt"></i></button>
 				</div>
 				<!-- If there is currently a link, display it as an anchor with a button to edit it -->
 				<div id="chatlinkinputgroup" v-if="!chatlink.current">
-					<input v-model="chatlink.temp" v-on:keyup.enter="submitchatlink" placeholder="https://hangouts.google.com/xxxxxxxx" class="chatlinkinput">
-					<button @click="submitchatlink"><i class="fas fa-check"></i></button>
-					<button @click="cancelchatlink"><i class="fas fa-times"></i></button>
+					<input v-model="chatlink.temp" v-on:keyup.enter="submitchatlink"
+						placeholder="https://hangouts.google.com/xxxxxxxx" class="chatlinkinput">
+					<button @click="submitchatlink" class="outline btn"><i class="fas fa-check"></i></button>
+					<button @click="cancelchatlink" class="outline btn"><i class="fas fa-times"></i></button>
 				</div>
 				<!-- If there is not currently a link, display an input to enter one -->
 				<i class="fas fa-chevron-up fa-2x hide-chat" @click="chatlink.visible=false"></i>
@@ -101,39 +129,43 @@
 				<!-- If chatlink is currently hidden -->
 				<i class="fas fa-headset fa-2x hide-chat" @click="chatlink.visible=true"></i> <!-- Unhide on click -->
 			</div>
-			
+
 			<div class="game-content">
-    			<div id="mycards">
-    				<!-- This is the main div where the white cards are held, either those in your hand or those submitted to the Card Czar -->
-    				<ul v-if="!turn&&!selectedcards.length">
-    					<!-- If it's not your turn and players are not done submitting cards to the Czar. This displays the cards in your hand -->
-    					<li v-for="(card, index) in whitecards" class="card whitecard" @click="selectCard(index)" :class="{ selected: card.selected }" :key="card.card_id">
+				<div id="mycards">
+					<!-- This is the main div where the white cards are held, either those in your hand or those submitted to the Card Czar -->
+					<ul v-if="!turn&&!selectedcards.length">
+						<!-- If it's not your turn and players are not done submitting cards to the Czar. This displays the cards in your hand -->
+						<li v-for="(card, index) in whitecards" class="card whitecard" @click="selectCard(index)"
+							:class="{ selected: card.selected }" :key="card.card_id">
 							<p v-html="card.card_text"></p>
-    					</li>
-    				</ul>
-    				<ul v-if="selectedcards.length&&turn">
-    					<!-- If it is your turn and cards have been submitted. This displays the selected cards and allows you to select a winner -->
-    					<li v-for="(card, index) in selectedcards" class="card whitecard" @click="selectWinningCard(index)" :class="{ selected: card.selected }" :key="card.name">
-                            <p v-html="card.card_text"></p>
-                            <p v-if="!turn" class="whitecardname">{{card.name}}</p>
-    					</li>
-    				</ul>
-    				<ul v-if="selectedcards.length&&!turn">
-    					<!-- If it is not turn, but players are done submitting cards. This displays all the submitted cards along with who submitted them,... -->
-    					<li v-for="(card, index) in selectedcards" class="card whitecard" :class="{ selected: card.selected }" :key="card.name">
-    						<!-- but you cannot choose a winner (because it's not your turn!) -->
-    						<p v-html="card.card_text"></p>
-    						<p class="whitecardname">{{card.name}}</p>
-    					</li>
-    				</ul>
-    				<h2 v-if="turn&&!selectedcards.length" class="turntext">It's your turn! Wait for other players to select white cards for you to choose from.</h2>
-    				<!-- If it is your turn, but players are not done submitting. Display a message to be patient -->
-    			</div>
-    			<div id="blackcard" v-if="blackcard.length" class="card blackcard">
-    				<!-- This shows the black card. -->
-    				<p v-html="blackcard[0].card_text"></p>
-    			</div>
-    			
+						</li>
+					</ul>
+					<ul v-if="selectedcards.length&&turn">
+						<!-- If it is your turn and cards have been submitted. This displays the selected cards and allows you to select a winner -->
+						<li v-for="(card, index) in selectedcards" class="card whitecard"
+							@click="selectWinningCard(index)" :class="{ selected: card.selected }" :key="card.name">
+							<p v-html="card.card_text"></p>
+							<p v-if="!turn" class="whitecardname">{{card.name}}</p>
+						</li>
+					</ul>
+					<ul v-if="selectedcards.length&&!turn">
+						<!-- If it is not turn, but players are done submitting cards. This displays all the submitted cards along with who submitted them,... -->
+						<li v-for="(card, index) in selectedcards" class="card whitecard"
+							:class="{ selected: card.selected }" :key="card.name">
+							<!-- but you cannot choose a winner (because it's not your turn!) -->
+							<p v-html="card.card_text"></p>
+							<p class="whitecardname">{{card.name}}</p>
+						</li>
+					</ul>
+					<h2 v-if="turn&&!selectedcards.length" class="turntext">It's your turn! Wait for other players to
+						select white cards for you to choose from.</h2>
+					<!-- If it is your turn, but players are not done submitting. Display a message to be patient -->
+				</div>
+				<div id="blackcard" v-if="blackcard.length" class="card blackcard">
+					<!-- This shows the black card. -->
+					<p v-html="blackcard[0].card_text"></p>
+				</div>
+
 			</div>
 			<!-- If the game hasn't yet started, show a button to start it -->
 		</div>
@@ -145,4 +177,5 @@
 <script>
 	var socket; // This ensures socket is a global that we can call from wherever we need to later
 </script>
+
 </html>
