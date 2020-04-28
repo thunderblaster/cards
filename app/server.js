@@ -172,22 +172,10 @@ io.on('connection', function (socket) { // The socket.io connection is first cal
 
         io.to(socket.room).emit('userlist', rooms[socket.room].userlist); // Announce the updated userlist to the room, showing that this user has selected a card
         // We need to check to see if this was the last user to select a card and if so, show the selected cards to everyone and let the Czar make a decision
-        let ready = 0; // The ready variable will count how many users are ready (either have selected a card or don't need to because they're the Czar)
-        for (let i = 0; i < rooms[socket.room].userlist.length; i++) { // Loop through the users in room
-            if (rooms[socket.room].userlist[i].turn || rooms[socket.room].userlist[i].selected) { // if it's your turn, you will not have selected a card
-                ready++; // Increment for users who are ready
-            }
-        }
-        if (ready === rooms[socket.room].userlist.length) { // everyone is ready
-            logger.verbose("Everyone is ready", {roomname: socket.room});
-            let selectedcards = []; // Here's a handy (but somewhat redundant) array to hold all the cards selected for play with this black card
-            for (let i = 0; i < rooms[socket.room].userlist.length; i++) { // Loop through all users in room
-                if (rooms[socket.room].userlist[i].selected) { // If they've selected a card (remember, one is the czar and will not have)
-                    selectedcards.push({ name: rooms[socket.room].userlist[i].name, card_text: rooms[socket.room].userlist[i].selected.card_text, selected: false, card_id : rooms[socket.room].userlist[i].selected.card_text}); // Push to array
-                }
-            }
-            util.shuffle(selectedcards); // This is important, otherwise the white cards will be displayed in the order of the players in the userlist array which means they wouldn't be anonymous
-            io.to(socket.room).emit('selectedcards', selectedcards); // Announce the list of selected white cards to the room
+        let ready = isRoomReady(socket.room);
+            
+        if (ready) { // everyone is ready
+            displaySelectedCards(socket.room)
         }
     });
 
@@ -298,25 +286,13 @@ io.on('connection', function (socket) { // The socket.io connection is first cal
             }
             socket.to(socket.room).emit('userlist', rooms[socket.room].userlist); //send updated userlist showing the user removed
 
-            //check if room is ready. this should be its own function and isn't DRY, but whatever. Needs to be done in case all players except the disconnector were ready
-            let ready = 0;
-            for (let i = 0; i < rooms[socket.room].userlist.length; i++) {
-                if (rooms[socket.room].userlist[i].turn || rooms[socket.room].userlist[i].selected) { // if it's your turn, you will not have selected a card
-                    ready++;
-                }
+            //check if room is ready.  Needs to be done in case all players except the disconnector were ready
+            
+            let ready = isRoomReady(socket.room);
+            
+            if (ready) { // everyone is ready
+                displaySelectedCards(socket.room)
             }
-            if (ready === rooms[socket.room].userlist.length) { // everyone is ready
-                logger.info("Everyone is ready", {roomname: socket.room});
-                let selectedcards = [];
-                for (let i = 0; i < rooms[socket.room].userlist.length; i++) {
-                    if (rooms[socket.room].userlist[i].selected) {
-                        selectedcards.push({ name: rooms[socket.room].userlist[i].name, card_text: rooms[socket.room].userlist[i].selected, selected: false })
-                    }
-                }
-                util.shuffle(selectedcards);
-                io.to(socket.room).emit('selectedcards', selectedcards);
-            }
-            //end redundant code
 
             if (rooms[socket.room].userlist.length == 0) {
                 logger.info("No users found, deleting room", {roomname: rooms[socket.room].name})
@@ -365,4 +341,31 @@ function dealWhiteCards(user) {
             break;
         }
     }
+}
+
+function isRoomReady(room) {
+    let ready = 0;
+    for (let i = 0; i < rooms[room].userlist.length; i++) {
+        if (rooms[room].userlist[i].turn || rooms[room].userlist[i].selected) { // if it's your turn, you will not have selected a card
+            ready++;
+        }
+    }
+    if (ready === rooms[room].userlist.length) { // everyone is ready
+        logger.info("Everyone is ready", {roomname: room});
+        return true;
+    } else {
+        return false;
+    }
+}
+
+function displaySelectedCards(room) {
+    let selectedcards = []; // Here's a handy (but somewhat redundant) array to hold all the cards selected for play with this black card
+    for (let i = 0; i < rooms[room].userlist.length; i++) { // Loop through all users in room
+        if (rooms[room].userlist[i].selected) { // If they've selected a card (remember, one is the czar and will not have)
+            selectedcards.push({ name: rooms[room].userlist[i].name, card_text: rooms[room].userlist[i].selected.card_text, selected: false, card_id : rooms[room].userlist[i].selected.card_id}); // Push to array
+        }
+    }
+    util.shuffle(selectedcards); // This is important, otherwise the white cards will be displayed in the order of the players in the userlist array which means they wouldn't be anonymous
+    io.to(room).emit('selectedcards', selectedcards); // Announce the list of selected white cards to the room
+        
 }
