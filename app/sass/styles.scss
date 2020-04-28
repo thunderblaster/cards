@@ -6,6 +6,18 @@ ul {
   list-style-type: none;
 }
 
+.outline {
+  background-color: transparent;
+  color: black;
+  border: 2px solid black;
+  border-radius: 10px;
+  
+}
+div.outline {
+  padding: 1px;
+}
+
+/*
 button, input {
   background-color: transparent;
   color: black;
@@ -15,7 +27,7 @@ button, input {
   margin-left: 0.3em;
   margin-top: 0.3em;
 }
-
+*/
 .header{
   background-color: black;
   color: white;
@@ -35,8 +47,12 @@ button, input {
   padding: 1em;
 }
 
-.lobbyinput {
-  width: 10em;
+#lobbyform {
+  margin: 2em 0;
+}
+
+#lobby {
+  max-width: 600px;
 }
 
 .hide-chat {
