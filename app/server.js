@@ -76,7 +76,7 @@ pool.query('SELECT * FROM white_cards', function (error, results, fields) { // P
     whitecards = results;
 });
 
-pool.query('SELECT * FROM black_cards', function (error, results, fields) {
+pool.query('SELECT * FROM black_cards WHERE number_of_responses=1', function (error, results, fields) {
     blackcards = results;
 });
 
