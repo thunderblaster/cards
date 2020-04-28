@@ -98,7 +98,7 @@ io.on('connection', function (socket) { // The socket.io connection is first cal
                 }
             });
             if (!rooms[msg.room]) { // The requested room doesn't exist in our global variable, so it's a new room and we need to create it
-                createRoom(msg.room); // Call the createRoom function
+                createRoom(msg.room, msg.winningscore); // Call the createRoom function
                 socket.name = msg.name; // Assign the player's name to their socket so we can get it later without having to send it from the client each time. 
                 socket.room = msg.room; // Assign their room as well
                 logger.debug("Adding user to room with empty hand", {roomname: msg.room, username: msg.name});
@@ -233,9 +233,12 @@ io.on('connection', function (socket) { // The socket.io connection is first cal
                     {
                         logger.info("Winning card selected black card_id %s white card_id %s ", rooms[socket.room].currentBlack[0].card_id , msg.card_id, {roomname: socket.room, username: rooms[socket.room].userlist[i].name});
                     }
-
-
-                }                
+                }       
+                
+                if(rooms[socket.room].userlist[i].points == rooms[socket.room].winningscore){
+                    io.to(socket.room).emit('winningplayer', rooms[socket.room].userlist[i].name);
+                    break;
+                }
             }
 
             for(let j = 0; j < rooms[socket.room].userlist[i].hand.length; j++){
@@ -332,8 +335,9 @@ http.listen(3001, function () {
     logger.info('Application starting at %s running on commit hash %s', now, process.argv[2]); // This is being output to the log file in the Docker Volume that we are serving at /log
 });
 
-function createRoom(roomname) { // Pretty straightforward
+function createRoom(roomname, winningscore) { // Pretty straightforward
     rooms[roomname] = {}; // Initialize our various variables
+    rooms[roomname].winningscore = winningscore;
     rooms[roomname].userlist = [];
     rooms[roomname].dclist = [];
     rooms[roomname].whitecards = [];
@@ -341,7 +345,7 @@ function createRoom(roomname) { // Pretty straightforward
     rooms[roomname].whitecards = rooms[roomname].whitecards.concat(whitecards); // add cards from global static array into our room's array
     rooms[roomname].blackcards = rooms[roomname].blackcards.concat(blackcards); // add cards from global static array into our room's array
 
-    logger.info('Room started', {roomname: roomname});
+    logger.info('Room started', {roomname: roomname, winningscore: winningscore});
 }
 
 function dealWhiteCards(user) {

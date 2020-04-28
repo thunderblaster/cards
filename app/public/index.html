@@ -42,7 +42,8 @@
         			<div class="col-12">            			        			
             			<div>
                 			What's your name? <input v-model="name" class="lobbyinput" v-focus><br />
-                            Enter a room name to join: <input v-model="room" v-on:keyup.enter="joinroom" class="lobbyinput">
+							Enter a room name to join: <input v-model="room" v-on:keyup.enter="maxscore" class="lobbyinput"><br />
+							Winning score (optional): <input v-model="winningscore" class="lobbyinput" v-on:keyup.enter="joinroom">
                             <button @click="joinroom"><i class="fas fa-arrow-right"></i></button>
 						</div>
 						<br>

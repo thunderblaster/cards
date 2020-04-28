@@ -12,6 +12,7 @@ var app = new Vue({
         blackcard: [], // I know, this shouldn't be an array
         room: "", // Name of room
         name: "", // Name of player
+        winningscore: 0,
         roomjoined: false,
         gamestarted: false,
         selectedcards: [], // These are all the cards submitted to the Card Czar
@@ -119,9 +120,13 @@ var app = new Vue({
             socket.on('whoareyou', function() { // This is sent when the server doesn't have a valid session for you
                 alert('Error occured. The page will be refreshed.');
                 location.reload(true);
-            })
+            });
+            socket.on('winningplayer', function(msg) {
+                alert(msg + ' has won the game!');
+                location.reload(true);
+            });
             // Okay, listeners set up
-            socket.emit('joinroom', {room: this.room, name: this.name}); // let's tell the server we're joining the room
+            socket.emit('joinroom', {room: this.room, name: this.name, winningscore: this.winningscore}); // let's tell the server we're joining the room
             window.setTimeout(()=>{socket.emit('drawwhite', this.name);}, 1000); // ask for cards, but give the server a moment to ensure the room gets created and we get joined to it
             this.roomjoined = true; // update the client that we've joined a room to update the view
         },
