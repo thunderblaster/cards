@@ -165,7 +165,9 @@ io.on('connection', function (socket) { // The socket.io connection is first cal
             return;
         }
 
-        logger.verbose("Card has been selected", {roomname: socket.room, cardtext: msg.card_text, cardid: msg.card_id, playername: socket.name});
+        if(msg){
+            logger.verbose("Card has been selected", {roomname: socket.room, cardtext: msg.card_text, cardid: msg.card_id, playername: socket.name});
+        }
 
         let userIndex = rooms[socket.room].userlist.findIndex(element => element.id === socket.id); // Grab their index in the user array
         rooms[socket.room].userlist[userIndex].selected = msg; // Note their selected card in their user in the rooms object
@@ -230,7 +232,7 @@ io.on('connection', function (socket) { // The socket.io connection is first cal
             }
 
             for(let j = 0; j < rooms[socket.room].userlist[i].hand.length; j++){
-                if(rooms[socket.room].userlist[i].selected.card_text == rooms[socket.room].userlist[i].hand[j].card_text){
+                if(rooms[socket.room].userlist[i].selected.card_id == rooms[socket.room].userlist[i].hand[j].card_id){
                     logger.verbose("Removing white card from user's hand", {roomname: socket.room, username: rooms[socket.room].userlist[i].name, cardid: rooms[socket.room].userlist[i].hand[j].card_id, cardtext: rooms[socket.room].userlist[i].hand[j].card_text});
                     rooms[socket.room].userlist[i].hand.splice(j, 1);
                     let user = { room: socket.room, name: rooms[socket.room].userlist[i].name, id: rooms[socket.room].userlist[i].id };
@@ -328,15 +330,21 @@ function dealWhiteCards(user) {
     for (let i = 0; i < rooms[user.room].userlist.length; i++) { // Loop through the users in room
         if (rooms[user.room].userlist[i].name == user.name) { 
             for (let j = 0; j < 7; j++) {
-                let index = util.getRandomIndex(rooms[user.room].whitecards);
-                let cardDrawn = rooms[user.room].whitecards.splice(index, 1);
-                
                 if(rooms[user.room].userlist[i].hand == undefined || rooms[user.room].userlist[i].hand.length < 7){
-                    logger.debug("Adding one card to user's hand", {roomname: user.room, username: rooms[user.room].userlist[i].name, cardid: cardDrawn[0].card_id});
-                    rooms[user.room].userlist[i].hand.push(cardDrawn[0]); //Add drawn card to the user's hand on serverside
+                    logger.debug("Room white card total: %i", rooms[user.room].whitecards.length);
+                    let index = util.getRandomIndex(rooms[user.room].whitecards);
+                    let cardDrawn = rooms[user.room].whitecards.splice(index, 1);
+                
+                    if(!cardDrawn || cardDrawn.length === 0){
+                        logger.error("Card was not successfully drawn, randomIndex: %s", index);
+                    } else {
+                    
+                        logger.debug("Adding one card to user's hand", {roomname: user.room, username: rooms[user.room].userlist[i].name, cardid: cardDrawn[0].card_id});
+                        rooms[user.room].userlist[i].hand.push(cardDrawn[0]); //Add drawn card to the user's hand on serverside
+                    }
                 }
-    
             }
+
             io.to(user.id).emit('dealcards', rooms[user.room].userlist[i].hand);
             break;
         }

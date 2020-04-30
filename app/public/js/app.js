@@ -53,6 +53,17 @@ var app = new Vue({
                     this.whitecards[i].selected = false;
                 }
                 this.whitecards[index].selected = true; //...and select the one the user clicked
+                if(this.whitecards[index].card_text.indexOf('Choose Your Own Text') !== -1 ){
+                    var inputtext = window.prompt("You selected a blank card, please enter text you'd like for a white card:");
+                    if (inputtext == null || inputtext == ""){
+                        this.whitecards[index].selected = false; //just toggle it to not selected
+                        socket.emit('selected', false); // Tell the server that the card was deselected
+                        this.$forceUpdate(); // i don't know why Vue isn't automatically updating here, but it's not
+                        return; //User didn't submit a response
+                    } else {
+                        this.whitecards[index].card_text = inputtext;
+                    }
+                }
                 logEvent('cardAction', 'selectedCard', this.whitecards[index].card_text, this.whitecards[index].card_id);
                 socket.emit('selected', this.whitecards[index]); // Tell the server which card we picked
                 this.$forceUpdate(); // i don't know why Vue isn't automatically updating here, but it's not
@@ -104,7 +115,6 @@ var app = new Vue({
                 app.whitecards = msg; // Update it
             });
             socket.on('dealblack', function(msg) { // The server dealt a black card
-                logEvent('cardAction', 'dealtBlackCard', msg.card_text, msg.card_id);
                 app.blackcard = msg; // Replace whatever we had with the new one
             });
             socket.on('gamestarted', function () { // The server is telling us the game has started
