@@ -136,6 +136,9 @@ var app = new Vue({
                 alert(msg + ' has won the game!');
                 location.reload(true);
             });
+            socket.on('winningscoreset', function(msg) {
+                app.winningscore = msg;
+            });
             // Okay, listeners set up
             socket.emit('joinroom', {room: this.room, name: this.name, winningscore: this.winningscore}); // let's tell the server we're joining the room
             window.setTimeout(()=>{socket.emit('drawwhite', this.name);}, 1000); // ask for cards, but give the server a moment to ensure the room gets created and we get joined to it

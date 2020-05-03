@@ -105,6 +105,7 @@
 							{{player.name}} - {{player.points}}
 						</li> <!-- List the name and points of each player in array -->
 					</ul>
+					<p v-if="winningscore" style="text-align:center;">First player to {{winningscore}} wins!</p>
 				</div>
 			</div>
 			<div id="chatlink" v-if="chatlink.visible">
