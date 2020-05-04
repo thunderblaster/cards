@@ -69,6 +69,22 @@ var app = new Vue({
                 this.$forceUpdate(); // i don't know why Vue isn't automatically updating here, but it's not
             }
         },
+        newcards(){
+            for(let i = 0; i < this.players.length; i++){
+                if(this.players[i].name == this.name){
+                    if(this.players[i].points > 0){
+                        var r = confirm("You can trade a point for a new hand of cards, would you like to do this?");
+                        if(r == true){
+                            logEvent('cardAction', 'userAskedForNewCards', 'We allowed this.');
+                            socket.emit('newcards');
+                        }
+                    } else {
+                        window.alert("You need a point before you can trade in your cards.")
+                    }
+                }
+            }
+            
+        },
         selectWinningCard: function(index) { // This is called when its your turn and you select the winning white card
             logEvent('cardAction', 'selectedWinningCard', app.selectedcards[index].card_text, app.selectedcards[index].card_id);
             socket.emit('winningcard', app.selectedcards[index]); // Tell the server which card won
@@ -135,6 +151,9 @@ var app = new Vue({
             socket.on('winningplayer', function(msg) {
                 alert(msg + ' has won the game!');
                 location.reload(true);
+            });
+            socket.on('winningscoreset', function(msg) {
+                app.winningscore = msg;
             });
             // Okay, listeners set up
             socket.emit('joinroom', {room: this.room, name: this.name, winningscore: this.winningscore}); // let's tell the server we're joining the room
