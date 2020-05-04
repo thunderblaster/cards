@@ -14,17 +14,17 @@
 	<meta property="og:title" content="Bigger. Blacker." />
 	<meta property="og:description"
 		content="A game designed with social distancing in mind, Bigger Blacker is an online port of the Cards Against Humanity card game. It allows players to play the popular card game online against friends." />
-	<meta property="og:image" content="https://biggerblacker.com/img/bblogo.png" />
+	<meta property="og:image" content="https://biggerblacker.com/img/bblogo-twitter.png" />
 
 	<!-- twitter card tags additive with the og: tags -->
 	<meta name="twitter:card" content="summary_large_image" />
 	<meta name="twitter:domain" value="biggerblacker.com" />
-	<meta name="twitter:site" content="@biggerblacker" />
+	<meta name="twitter:site" content="@bigger_blacker" />
 	<meta name="twitter:title" content="Bigger. Blacker." />
 	<meta name="twitter:description"
 		content="A game designed with social distancing in mind, Bigger Blacker is an online port of the Cards Against Humanity card game. It allows players to play the popular card game online against friends." />
 	<meta name="twitter:image" content="biggerblacker.com/img/bblogo.png" />
-	<meta name="twitter:url" value="https://biggerblacker.com/" />
+	<meta name="twitter:url" value="https://biggerblacker.com/img/bblogo-twitter.png" />
 
 	<link href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" rel="stylesheet">
 	<link href="/css/all.min.css" rel="stylesheet"> <!-- Font Awesome CSS -->
@@ -94,17 +94,24 @@
 			<div class="game-header">
 
 				<button @click="startgame" v-if="!gamestarted" class="outline btn" id="startbutton">Start Game!</button>
-				<div id="playerlist">
-					<!-- The playerlist in the top right -->
-					<ul>
-						<li>
-							<u>{{room}}:</u>
-						</li> <!-- The room name -->
-						<li v-for="player in players" :key="player.name"
-							:class="{ selected: player.selected, turn: player.turn }">
-							{{player.name}} - {{player.points}}
-						</li> <!-- List the name and points of each player in array -->
-					</ul>
+				<div id="rightpanel">
+					<div id="playerlist">
+						<!-- The playerlist in the top right -->
+						<ul>
+							<li>
+								<u>{{room}}:</u>
+							</li> <!-- The room name -->
+							<li v-for="player in players" :key="player.name"
+								:class="{ selected: player.selected, turn: player.turn }">
+								{{player.name}} - {{player.points}}
+							</li> <!-- List the name and points of each player in array -->
+						</ul>
+						<p v-if="winningscore" style="text-align:center;">First player to {{winningscore}} wins!</p>
+						
+					</div>
+					<div id="playercontrols">
+						<button @click="newcards" v-if="gamestarted&&!turn&&!selectedcards.length" class="outline btn" id="newcards">My cards suck.</button>
+					</div>	
 				</div>
 			</div>
 			<div id="chatlink" v-if="chatlink.visible">
@@ -129,9 +136,10 @@
 				<!-- If chatlink is currently hidden -->
 				<i class="fas fa-headset fa-2x hide-chat" @click="chatlink.visible=true"></i> <!-- Unhide on click -->
 			</div>
-
+				
 			<div class="game-content">
 				<div id="mycards">
+					
 					<!-- This is the main div where the white cards are held, either those in your hand or those submitted to the Card Czar -->
 					<ul v-if="!turn&&!selectedcards.length">
 						<!-- If it's not your turn and players are not done submitting cards to the Czar. This displays the cards in your hand -->

@@ -134,11 +134,22 @@ button, input {
 }
 
 #playerlist {
+  background-color: black;
+  color: white;
+  border-bottom-left-radius: 10px;
+  border: 3px solid white;
+  max-height: 50vh;
+}
+
+#playercontrols {
+  border: 3px solid white;
+  border-bottom-left-radius: 10px;
+}
+
+#rightpanel {
   float: right;
   width: 12em;
   border: 3px solid white;
-  background-color: black;
-  color: white;
   border-bottom-left-radius: 10px;
   max-height: 50vh;
   overflow-y: scroll;
@@ -173,6 +184,12 @@ button, input {
   animation-delay: 10s;
   animation-fill-mode: forwards;
   float: left;
+}
+
+#newcards {
+  margin: 0.5em;
+  align-items: center;
+  background-color: white;
 }
 
 @keyframes growAndBlacken {

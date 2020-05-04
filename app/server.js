@@ -130,6 +130,9 @@ io.on('connection', function (socket) { // The socket.io connection is first cal
 
             socket.join(msg.room); // add to the actual room
             io.to(msg.room).emit('userlist', rooms[msg.room].userlist); // send updated userlist with our new guest
+            if(rooms[msg.room].winningscore){
+                io.to(socket.room).emit('winningscoreset', rooms[msg.room].winningscore);
+            }
             if (rooms[msg.room].gamestarted) { // if the game is in progress...
                 io.to(socket.id).emit('gamestarted'); // ...let the new user know
                 io.to(socket.id).emit('dealblack', rooms[socket.room].currentBlack); // ...and show them the current black card
@@ -187,9 +190,8 @@ io.on('connection', function (socket) { // The socket.io connection is first cal
             io.to(socket.id).emit('whoareyou'); // This essentially tells the client they have a stale session and need to reload
             return;
         }
-        
-        dealWhiteCards(socket);
-        
+
+        dealWhiteCards(socket);    
 
     })
 
@@ -261,6 +263,19 @@ io.on('connection', function (socket) { // The socket.io connection is first cal
         io.to(socket.room).emit('userlist', rooms[socket.room].userlist); // Announce the new list showing all players have no selected card and the new czar
 
     });
+    socket.on('newcards', () => {
+        if (!socket.room) {
+            io.to(socket.id).emit('whoareyou'); // This essentially tells the client they have a stale session and need to reload
+            return;
+        }
+
+        let userIndex = rooms[socket.room].userlist.findIndex(element => element.id === socket.id); //Find the user
+        rooms[socket.room].userlist[userIndex].hand = []; // Reset their hand
+        rooms[socket.room].userlist[userIndex].points--; // Dock a point for changing cards
+        dealWhiteCards(socket); // Deal them a new hand
+
+        io.to(socket.room).emit('userlist', rooms[socket.room].userlist); // Let everyone know the new scores
+    });
     socket.on('disconnect', () => { //check if room is empty and if so, delete
         if (socket.room) {
             logger.debug("Disconnect triggered");
@@ -329,20 +344,20 @@ function createRoom(roomname, winningscore) { // Pretty straightforward
 function dealWhiteCards(user) {
     for (let i = 0; i < rooms[user.room].userlist.length; i++) { // Loop through the users in room
         if (rooms[user.room].userlist[i].name == user.name) { 
-            for (let j = 0; j < 7; j++) {
-                if(rooms[user.room].userlist[i].hand == undefined || rooms[user.room].userlist[i].hand.length < 7){
-                    logger.debug("Room white card total: %i", rooms[user.room].whitecards.length);
-                    let index = util.getRandomIndex(rooms[user.room].whitecards);
-                    let cardDrawn = rooms[user.room].whitecards.splice(index, 1);
+            while (rooms[user.room].userlist[i].hand == undefined || rooms[user.room].userlist[i].hand.length < 7) {
                 
-                    if(!cardDrawn || cardDrawn.length === 0){
-                        logger.error("Card was not successfully drawn, randomIndex: %s", index);
-                    } else {
-                    
-                        logger.debug("Adding one card to user's hand", {roomname: user.room, username: rooms[user.room].userlist[i].name, cardid: cardDrawn[0].card_id});
-                        rooms[user.room].userlist[i].hand.push(cardDrawn[0]); //Add drawn card to the user's hand on serverside
-                    }
+                logger.debug("Room white card total: %i", rooms[user.room].whitecards.length);
+                let index = util.getRandomIndex(rooms[user.room].whitecards);
+                let cardDrawn = rooms[user.room].whitecards.splice(index, 1);
+            
+                if(!cardDrawn || cardDrawn.length === 0){
+                    logger.error("Card was not successfully drawn, randomIndex: %s", index);
+                } else {
+                
+                    logger.debug("Adding one card to user's hand", {roomname: user.room, username: rooms[user.room].userlist[i].name, cardid: cardDrawn[0].card_id});
+                    rooms[user.room].userlist[i].hand.push(cardDrawn[0]); //Add drawn card to the user's hand on serverside
                 }
+                
             }
 
             io.to(user.id).emit('dealcards', rooms[user.room].userlist[i].hand);
