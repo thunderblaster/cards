@@ -168,7 +168,9 @@ var app = new Vue({
         Http.send();
 
         Http.onreadystatechange = (e) => {
-            app.version = JSON.parse(Http.responseText); // And add it to Vue to be displayed on the front page
+            if(Http.responseText && Http.responseText.length > 0){
+                app.version = JSON.parse(Http.responseText); // And add it to Vue to be displayed on the front page
+            }
         }
         setTimeout(function() {app.chatlink.visible=false;}, 12000); // Start with chatlink open, but autohide after a while
 
