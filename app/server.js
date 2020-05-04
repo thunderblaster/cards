@@ -190,9 +190,8 @@ io.on('connection', function (socket) { // The socket.io connection is first cal
             io.to(socket.id).emit('whoareyou'); // This essentially tells the client they have a stale session and need to reload
             return;
         }
-        
-        dealWhiteCards(socket);
-        
+
+        dealWhiteCards(socket);    
 
     })
 
@@ -263,6 +262,19 @@ io.on('connection', function (socket) { // The socket.io connection is first cal
         }
         io.to(socket.room).emit('userlist', rooms[socket.room].userlist); // Announce the new list showing all players have no selected card and the new czar
 
+    });
+    socket.on('newcards', () => {
+        if (!socket.room) {
+            io.to(socket.id).emit('whoareyou'); // This essentially tells the client they have a stale session and need to reload
+            return;
+        }
+
+        let userIndex = rooms[socket.room].userlist.findIndex(element => element.id === socket.id); //Find the user
+        rooms[socket.room].userlist[userIndex].hand = []; // Reset their hand
+        rooms[socket.room].userlist[userIndex].points--; // Dock a point for changing cards
+        dealWhiteCards(socket); // Deal them a new hand
+
+        io.to(socket.room).emit('userlist', rooms[socket.room].userlist); // Let everyone know the new scores
     });
     socket.on('disconnect', () => { //check if room is empty and if so, delete
         if (socket.room) {

@@ -94,18 +94,24 @@
 			<div class="game-header">
 
 				<button @click="startgame" v-if="!gamestarted" class="outline btn" id="startbutton">Start Game!</button>
-				<div id="playerlist">
-					<!-- The playerlist in the top right -->
-					<ul>
-						<li>
-							<u>{{room}}:</u>
-						</li> <!-- The room name -->
-						<li v-for="player in players" :key="player.name"
-							:class="{ selected: player.selected, turn: player.turn }">
-							{{player.name}} - {{player.points}}
-						</li> <!-- List the name and points of each player in array -->
-					</ul>
-					<p v-if="winningscore" style="text-align:center;">First player to {{winningscore}} wins!</p>
+				<div id="rightpanel">
+					<div id="playerlist">
+						<!-- The playerlist in the top right -->
+						<ul>
+							<li>
+								<u>{{room}}:</u>
+							</li> <!-- The room name -->
+							<li v-for="player in players" :key="player.name"
+								:class="{ selected: player.selected, turn: player.turn }">
+								{{player.name}} - {{player.points}}
+							</li> <!-- List the name and points of each player in array -->
+						</ul>
+						<p v-if="winningscore" style="text-align:center;">First player to {{winningscore}} wins!</p>
+						
+					</div>
+					<div id="playercontrols">
+						<button @click="newcards" v-if="gamestarted&&!turn&&!selectedcards.length" class="outline btn" id="newcards">My cards suck.</button>
+					</div>	
 				</div>
 			</div>
 			<div id="chatlink" v-if="chatlink.visible">
@@ -130,9 +136,10 @@
 				<!-- If chatlink is currently hidden -->
 				<i class="fas fa-headset fa-2x hide-chat" @click="chatlink.visible=true"></i> <!-- Unhide on click -->
 			</div>
-
+				
 			<div class="game-content">
 				<div id="mycards">
+					
 					<!-- This is the main div where the white cards are held, either those in your hand or those submitted to the Card Czar -->
 					<ul v-if="!turn&&!selectedcards.length">
 						<!-- If it's not your turn and players are not done submitting cards to the Czar. This displays the cards in your hand -->
