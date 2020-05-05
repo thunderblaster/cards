@@ -224,7 +224,7 @@ io.on('connection', function (socket) { // The socket.io connection is first cal
                     if(rooms[socket.room].userlist[i].hand[j].card_text == msg.card_text) // Search for the winning card from their hand
                     {
                         logger.info("Winning card selected black card_id %s white card_id %s ", rooms[socket.room].currentBlack[0].card_id , msg.card_id, {roomname: socket.room, username: rooms[socket.room].userlist[i].name});
-                        pool.query("INSERT INTO log_card (name, room, black_card, winning_white_card) VALUES (?, ? , ?, ?);", [socket.room, rooms[socket.room].userlist[i].name, rooms[socket.room].currentBlack[0].card_id, msg.card_id]);
+                        pool.query("INSERT INTO log_card (room, name, black_card, winning_white_card) VALUES (?, ? , ?, ?);", [socket.room, rooms[socket.room].userlist[i].name, rooms[socket.room].currentBlack[0].card_id, msg.card_id]);
                     }
                 }       
                 
