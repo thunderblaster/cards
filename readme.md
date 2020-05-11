@@ -1,9 +1,9 @@
 ### Sample .env file:
-DB_HOST=<hostname>
-DB_NAME=<databasename>
-DB_PORT=<port>
-DB_USER=<username>
-DB_PASS=<password>
+DB_HOST=yourhostnamehere
+DB_NAME=yourdatabasenamehere
+DB_PORT=yourportnumberhere
+DB_USER=yourusernamehere
+DB_PASS=yourpasswordhere
 
 ### Docker run steps:
 1. Create .env file with database creds
