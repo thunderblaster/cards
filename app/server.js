@@ -1,5 +1,6 @@
 var express = require('express'); // Load Express (web server)
 var app = express(); // Initialize it
+var bodyParser = require('body-parser');
 var http = require('http').createServer(app); // Socket.io requires the Express app to be run through the http library.  Not sure why.
 var io = require('socket.io')(http); // Load and initialize Socket.io to our webserver
 var mysql = require('mysql'); // Load MySQL
@@ -55,6 +56,41 @@ app.get('/', function (req, res) { // Serve index.html from the public folder wh
     res.sendFile(__dirname + '/public/index.html');
 });
 
+app.get('/newcard', function (req, res) { // Serve index.html from the public folder when a user requests the webroot
+    res.sendFile(__dirname + '/public/newcard.html');
+});
+
+app.use(bodyParser.urlencoded({
+    extended: true
+  }));
+
+app.post('/newcard', function(req, res){
+    logger.info("We got a new card idea, type: %s text: %s", req.body.cardtype, req.body.cardtext);
+
+    if(!req.body.cardtext || req.body.cardtext.length < 3){
+        res.send("Maybe submit an actual idea next time?");
+        return;
+    }
+
+    if(req.body.cardtype == "black"){
+        pool.query('INSERT INTO black_cards (card_text, number_of_responses, approved) VALUES (?, ?, ?)', [req.body.cardtext, 1, 0], function (error, results, fields) { // Just log who they are, where they're from and which room they're joining
+            if(error){
+                logger.error(error.message);
+            }
+        });
+    } else if(req.body.cardtype == "white"){
+        pool.query('INSERT INTO white_cards (card_text, approved) VALUES (?, ?)', [req.body.cardtext, 0], function (error, results, fields) { // Just log who they are, where they're from and which room they're joining
+            if(error){
+                logger.error(error.message);
+            }
+        });
+    }
+
+    res.send("Thanks, we'll look into it, maybe.");
+});
+
+
+
 app.get('/version', function (req, res) { // Serve the git information provided as command line args at /version
     let version = {
         hash: process.argv[2],
@@ -72,11 +108,11 @@ app.use(express.static(__dirname + '/public')); // If someone requests another p
 
 var whitecards, blackcards;
 
-pool.query('SELECT * FROM white_cards', function (error, results, fields) { // Pull cards from DB into array
+pool.query('SELECT * FROM white_cards WHERE approved = 1', function (error, results, fields) { // Pull cards from DB into array
     whitecards = results;
 });
 
-pool.query('SELECT * FROM black_cards WHERE number_of_responses=1', function (error, results, fields) {
+pool.query('SELECT * FROM black_cards WHERE number_of_responses=1 AND approved = 1', function (error, results, fields) {
     blackcards = results;
 });
 
