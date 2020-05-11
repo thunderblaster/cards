@@ -29,6 +29,8 @@ ENV env_hash=dev
 ARG git_date
 ENV env_date=dev
 
+RUN export NODE_ENV=development
+
 RUN compass compile /usr/src/cards/app;
 
 ADD entrypoint.sh /bin/entrypoint.sh
