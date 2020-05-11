@@ -1,8 +1,8 @@
 ### Sample .env file:
-DB_HOST=yourhostnamehere
-DB_NAME=yourdatabasenamehere
-DB_PORT=yourportnumberhere
-DB_USER=yourusernamehere
+DB_HOST=yourhostnamehere  
+DB_NAME=yourdatabasenamehere  
+DB_PORT=yourportnumberhere  
+DB_USER=yourusernamehere  
 DB_PASS=yourpasswordhere
 
 ### Docker run steps:
