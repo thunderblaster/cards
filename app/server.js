@@ -86,7 +86,7 @@ app.post('/newcard', function(req, res){
         });
     }
 
-    res.send("Thanks, we'll look into it, maybe.");
+    res.sendFile(__dirname + '/public/cardsubmitted.html');
 });
 
 
