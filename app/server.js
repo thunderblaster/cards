@@ -1,29 +1,29 @@
+require('dotenv').config();
 var express = require('express'); // Load Express (web server)
 var app = express(); // Initialize it
 var bodyParser = require('body-parser');
 var http = require('http').createServer(app); // Socket.io requires the Express app to be run through the http library.  Not sure why.
 var io = require('socket.io')(http); // Load and initialize Socket.io to our webserver
 var mysql = require('mysql'); // Load MySQL
-const config = require('./config'); // Get our config file
 const util = require('./utilities');
 const winston = require('winston');
 const winston_mysql = require('winston-mysql');
 
 var options_default = {
-    host     : config.database.host,
-    user     : config.database.user,
-    password : config.database.password,
-    database : config.database.database,
+    host     : process.env.DB_HOST,
+    user     : process.env.DB_USER,
+    password : process.env.DB_PASS,
+    database : process.env.DB_NAME,
     table    : 'log_system'
   };
 
 var pool = mysql.createPool({ // Initialize the MySQL connection pool. Defaulting to 25 connections here, may need to increase later.
     connectionLimit: 25,
-    host: config.database.host,
-    user: config.database.user,
-    password: config.database.password,
-    database: config.database.database,
-    port: config.database.port
+    host: process.env.DB_HOST,
+    user: process.env.DB_USER,
+    password: process.env.DB_PASS,
+    database: process.env.DB_NAME,
+    port: process.env.DB_PORT
 });
 
 const logger = winston.createLogger({
