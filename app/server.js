@@ -1,4 +1,6 @@
-require('dotenv').config();
+const path = require('path');
+require('dotenv').config({ path: path.resolve(__dirname, '.env') });
+
 var express = require('express'); // Load Express (web server)
 var app = express(); // Initialize it
 var bodyParser = require('body-parser');

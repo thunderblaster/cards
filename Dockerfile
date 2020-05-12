@@ -38,4 +38,4 @@ RUN export NODE_ENV=production
 
 RUN compass compile /usr/src/cards/app;
 
-CMD [ "sh", "-c", "node app/server.js ${env_hash} ${env_date} ${env_branch} 2>&1 | tee -a /log/app.log" ]
+CMD [ "sh", "-c", "node /usr/src/cards/app/server.js ${env_hash} ${env_date} ${env_branch} 2>&1 | tee -a /log/app.log" ]
