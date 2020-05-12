@@ -1,5 +1,3 @@
-const config = require('./config'); // Get our config file
-
 module.exports = {
     getRandomIndex: function (array) { // This is used when drawing cards
         return Math.floor(Math.random() * array.length);
