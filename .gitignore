@@ -5,3 +5,4 @@ config.js
 app/log
 app/public/css/styles.css
 styles.css
+.env*
