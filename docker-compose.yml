@@ -10,6 +10,7 @@ services:
     tty: true
     ports:
       - '3001:3001'
+      - '5858:5858'
     volumes:
       - './app:/usr/src/cards'
       - 'cards-node-data:/log'

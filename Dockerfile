@@ -34,6 +34,8 @@ ARG git_branch
 ENV env_branch=$git_branch
 LABEL git_branch=${git_branch}
 
+RUN export NODE_ENV=production
+
 RUN compass compile /usr/src/cards/app;
 
 CMD [ "sh", "-c", "node app/server.js ${env_hash} ${env_date} ${env_branch} 2>&1 | tee -a /log/app.log" ]

@@ -35,8 +35,8 @@
 <body>
 	<div id="app">
 		<div class="header">
-			<h1 id="title" onClick="window.location.reload();">Bigger. Blacker.</h1>
-			<span id="beerlink"><a href="https://paypal.me/pools/c/8oldMsnktL" target="_blank">Buy us a beer!</a></span>
+			<h1 id="title" onClick="window.open('/', '_self');">Bigger. Blacker.</h1>
+			<div id="beerlink"><a href="/newcard" target="_blank">I've got some card ideas</a><br /><a href="https://paypal.me/pools/c/8oldMsnktL" target="_blank">Buy us a beer!</a></div>
 		</div>
 		<div v-if="!roomjoined">
 			<!-- this is the join a room view -->

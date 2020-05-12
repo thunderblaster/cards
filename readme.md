@@ -1,18 +1,25 @@
+### Sample .env file:
+DB_HOST=yourhostnamehere  
+DB_NAME=yourdatabasenamehere  
+DB_PORT=yourportnumberhere  
+DB_USER=yourusernamehere  
+DB_PASS=yourpasswordhere
+
 ### Docker run steps:
-1. Create app/config.js with database creds
+1. Create .env file with database creds
 2. Install docker (if needed)
 3. `sudo ./build.sh`
 4. Run with ----network="host" `sudo ./run-network-host.sh` or run with configured ports `sudo ./run.sh`
 
 ### Docker-compose steps:
-1. Create app/config.js with database creds
+1. Create .env file with database creds
 2. Install docker (if needed)
 2. To build service: `docker-compose up --build`
 3. To stop service: CTL+C or `docker-compose stop`
 4. To teardown service `docker-compose down`
 
 ### Native Node.js steps:
-1. Create app/config.js with database creds
+1. Create .env with database creds
 2. Install node/npm (if needed)
 3. `cd app`
 4. `npm install`
