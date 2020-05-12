@@ -1,4 +1,4 @@
-require('dotenv').config();
+require('dotenv').config({ path: './env.vars' });
 var express = require('express'); // Load Express (web server)
 var app = express(); // Initialize it
 var bodyParser = require('body-parser');
